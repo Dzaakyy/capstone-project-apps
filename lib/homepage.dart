@@ -16,7 +16,7 @@ class _HomePageState extends State<HomePage> {
   String? _prediction;
   double? _confidence;
   final picker = ImagePicker();
-  final String baseUrl = 'http://10.0.2.2:3000'; // Change to your local Node.js IP
+  final String baseUrl = 'http://10.0.2.2:3000'; 
   bool _isLoading = false;
 
   // Function to pick image
@@ -48,7 +48,7 @@ class _HomePageState extends State<HomePage> {
     try {
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('$baseUrl/api/predict'),
+        Uri.parse('$baseUrl/prediksi/create'),
       );
       request.files.add(await http.MultipartFile.fromPath('image', _image!.path));
       var response = await request.send();
@@ -131,7 +131,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               if (_confidence != null) 
-                Text('Confidence: ${(_confidence! * 100).toStringAsFixed(2)}%'),
+                Text('Akurasi: ${(_confidence! * 100).toStringAsFixed(2)}%'),
               const SizedBox(height: 16),
             ],
           ],
