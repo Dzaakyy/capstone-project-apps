@@ -19,19 +19,17 @@ class _HomePageState extends State<HomePage> {
   final String baseUrl = 'http://10.0.2.2:3000'; 
   bool _isLoading = false;
 
-  // Function to pick image
   Future<void> _pickImage() async {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
         _image = File(pickedFile.path);
-        _prediction = null; // Reset prediction result
+        _prediction = null; 
         _confidence = null;
       });
     }
   }
 
-  // Function to upload image to Node.js
   Future<void> _uploadImage() async {
     if (_image == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -57,15 +55,12 @@ class _HomePageState extends State<HomePage> {
         var responseData = await response.stream.bytesToString();
         var jsonResponse = jsonDecode(responseData);
         
-        // Handle the response based on what the backend returns
         if (jsonResponse['error'] != null) {
-          // If backend returns an error (like "Not a mango leaf")
           setState(() {
             _prediction = jsonResponse['error'];
             _confidence = null;
           });
         } else {
-          // If it's a successful prediction
           setState(() {
             _prediction = jsonResponse['prediction']?.toString();
             _confidence = jsonResponse['confidence']?.toDouble();
@@ -98,18 +93,15 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Button to select image
             ElevatedButton(
               onPressed: _pickImage,
               child: const Text('Select Image'),
             ),
             const SizedBox(height: 16),
-            // Display selected image
             _image != null
                 ? Center(child: Image.file(_image!, height: 150))
                 : const Center(child: Text('No image selected')),
             const SizedBox(height: 16),
-            // Button to upload and predict
             Center(
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _uploadImage,
@@ -119,7 +111,6 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             const SizedBox(height: 16),
-            // Display prediction results
             if (_prediction != null) ...[
               const Text('Result:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
