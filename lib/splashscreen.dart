@@ -1,11 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:camera/camera.dart';
 import 'package:frontend/home.dart';
-import 'package:frontend/homepage.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  final List<CameraDescription> cameras;
+  const SplashScreen({super.key, required this.cameras});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -18,8 +19,7 @@ class _SplashScreenState extends State<SplashScreen> {
     Timer(
       const Duration(seconds: 3),
       (() => Navigator.of(context).pushReplacement
-      (MaterialPageRoute(builder: (BuildContext context) => const HomeScreen())
-      )
+      (MaterialPageRoute(builder: (BuildContext context) => HomeScreen(cameras: widget.cameras)))
       )
     );
   }

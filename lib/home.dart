@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:camera/camera.dart'; // Import camera for CameraDescription
 import 'package:frontend/homepage.dart';
 import 'package:frontend/komunitas.dart';
 import 'package:frontend/profile.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final List<CameraDescription> cameras;
+  const HomeScreen({super.key, required this.cameras});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -18,7 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState(){
     super.initState();
     widgetList = [
-      HomePage(),
+      HomePage(cameras: widget.cameras), // Pass cameras to HomePage
       KomunitasScreen(),
       ProfileScreen()
     ];
