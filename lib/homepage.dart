@@ -1,8 +1,4 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,119 +8,125 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  File? _image;
-  String? _prediction;
-  double? _confidence;
-  final picker = ImagePicker();
-  final String baseUrl = 'http://10.0.2.2:3000'; 
-  bool _isLoading = false;
-
-  Future<void> _pickImage() async {
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _image = File(pickedFile.path);
-        _prediction = null; 
-        _confidence = null;
-      });
-    }
-  }
-
-  Future<void> _uploadImage() async {
-    if (_image == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select an image first!')),
-      );
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-      _prediction = 'Processing...';
-    });
-
-    try {
-      var request = http.MultipartRequest(
-        'POST',
-        Uri.parse('$baseUrl/prediksi/create'),
-      );
-      request.files.add(await http.MultipartFile.fromPath('image', _image!.path));
-      var response = await request.send();
-
-      if (response.statusCode == 200) {
-        var responseData = await response.stream.bytesToString();
-        var jsonResponse = jsonDecode(responseData);
-        
-        if (jsonResponse['error'] != null) {
-          setState(() {
-            _prediction = jsonResponse['error'];
-            _confidence = null;
-          });
-        } else {
-          setState(() {
-            _prediction = jsonResponse['prediction']?.toString();
-            _confidence = jsonResponse['confidence']?.toDouble();
-          });
-        }
-      } else {
-        setState(() {
-          _prediction = 'Failed to process prediction (Status: ${response.statusCode})';
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _prediction = 'Error: ${e.toString()}';
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Mango Leaf Disease Detection'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ElevatedButton(
-              onPressed: _pickImage,
-              child: const Text('Select Image'),
-            ),
-            const SizedBox(height: 16),
-            _image != null
-                ? Center(child: Image.file(_image!, height: 150))
-                : const Center(child: Text('No image selected')),
-            const SizedBox(height: 16),
-            Center(
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _uploadImage,
-                child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('Predict'),
+      body: SingleChildScrollView(
+        child: Stack(
+          children: <Widget>[
+            Container(
+              height: 280,
+              padding: const EdgeInsets.fromLTRB(16, 80, 16, 80),
+              decoration: BoxDecoration(
+                  color: Colors.indigo.shade300,
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(50),
+                    bottomRight: Radius.circular(50),
+                  )),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Expanded(
+                        flex: 1,
+                        child: Text(
+                          'Cek Kesehatan Tanaman Anda',
+                          style: TextStyle(
+                              fontSize: 25, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child:
+                            Image.asset('./lib/assets/mango.png', height: 120),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 16),
-            if (_prediction != null) ...[
-              const Text('Result:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              Text(
-                'Prediction: $_prediction',
-                style: TextStyle(
-                  color: _confidence == null ? Colors.red : Colors.black,
-                  fontWeight: FontWeight.bold,
+            Card(
+              margin: const EdgeInsets.symmetric(horizontal: 40, vertical: 230),
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: <Widget>[
+                   const Padding(padding: EdgeInsets.only(top: 20),
+                    
+                    child: Row(
+                      
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Column(
+                          children: [
+                            Icon(Icons.photo_camera_outlined),
+                            SizedBox(height: 4),
+                            Text(
+                              'Ambil\nGambar',
+                              style: TextStyle(fontSize: 12),
+                              maxLines: 2,
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                        Icon(Icons.chevron_right_rounded),
+                        Column(
+                          children: [
+                            Icon(Icons.note_add_outlined),
+                            SizedBox(height: 4),
+                            Text(
+                              'Cek\nDiagnosis',
+                              style: TextStyle(fontSize: 12),
+                              maxLines: 2,
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                        Icon(Icons.chevron_right_rounded),
+                        Column(
+                          children: [
+                            Icon(Icons.energy_savings_leaf_outlined),
+                            SizedBox(height: 4),
+                            Text(
+                              'Rekomendasi\nPerawatan',
+                              style: TextStyle(fontSize: 12),
+                              maxLines: 2,
+                              textAlign: TextAlign.center,
+                            )
+                          ],
+                        )
+                      ],
+                    ),
+                    ),
+                    Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
+                          child: ElevatedButton(
+                            onPressed: () {},
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue
+                                  .shade700,
+                              minimumSize: const Size(200, 50),
+                            ),
+                            child: const Text(
+                              'Ambil Gambar',
+                              style:
+                                  TextStyle(fontSize: 18, color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-              if (_confidence != null) 
-                Text('Akurasi: ${(_confidence! * 100).toStringAsFixed(2)}%'),
-              const SizedBox(height: 16),
-            ],
+            ),
           ],
         ),
       ),

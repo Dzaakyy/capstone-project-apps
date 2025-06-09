@@ -65,6 +65,7 @@ flutter:
      - ./lib/assets/gambar1.jpg
      - ./lib/assets/gambar2.jpg
      - ./lib/assets/gambar3.jpeg
+     - ./lib/assets/mango.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
