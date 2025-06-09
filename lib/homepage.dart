@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:frontend/camerapage.dart'; // Import CameraPage
+// import 'package:image_picker/image_picker.dart';
+import 'package:frontend/camerapage.dart'; 
 
 class HomePage extends StatefulWidget {
   final List<CameraDescription> cameras;
@@ -12,14 +12,14 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final ImagePicker _picker = ImagePicker();
+  // final ImagePicker _picker = ImagePicker();
 
-  Future<void> _pickImage(ImageSource source) async {
-    final XFile? image = await _picker.pickImage(source: source);
-    if (image != null) {
-      print('Image picked: ${image.path}');
-    }
-  }
+  // Future<void> _pickImage(ImageSource source) async {
+  //   final XFile? image = await _picker.pickImage(source: source);
+  //   if (image != null) {
+  //     print('Image picked: ${image.path}');
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {

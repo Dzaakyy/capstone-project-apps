@@ -15,7 +15,7 @@ class _CameraPageState extends State<CameraPage> {
   late CameraController _controller;
   bool _isCameraInitialized = false;
   final ImagePicker _picker = ImagePicker();
-  XFile? _capturedImage; 
+  XFile? _capturedImage;
 
   @override
   void initState() {
@@ -76,6 +76,14 @@ class _CameraPageState extends State<CameraPage> {
     }
   }
 
+    void _handleBackPress() {
+    if (_capturedImage != null) {
+      _retakePicture(); 
+    } else {
+      Navigator.pop(context); 
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!_isCameraInitialized) {
@@ -83,65 +91,73 @@ class _CameraPageState extends State<CameraPage> {
     }
 
     return Scaffold(
-      body: Stack(
+      body: Column(
         children: [
-          _capturedImage == null
-              ? SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height,
-                  child: CameraPreview(_controller),
-                )
-              : SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height,
-                  child: Image.file(File(_capturedImage!.path), fit: BoxFit.cover),
-                ),
-
+          Container(
+            color: Colors.black,
+            height: 80, 
+            padding: const EdgeInsets.only(left: 10, top: 5),
+            alignment: Alignment.centerLeft,
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 25),
+              onPressed: _handleBackPress,
+            ),
+          ),
           
-          Positioned(
-            bottom: 20,
-            left: 0,
-            right: 0,
+         
+          Expanded(
+            flex: 9, 
+            child: Container(
+              color: Colors.black,
+              width: double.infinity, 
+              child: _capturedImage == null
+                  ? CameraPreview(_controller)
+                  : Image.file(
+                      File(_capturedImage!.path),
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                    ),
+            ),
+          ),
+          
+          
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            color: Colors.black,
             child: _capturedImage == null
                 ? Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround, 
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       IconButton(
                         icon: const Icon(Icons.photo_library, color: Colors.white),
                         onPressed: _pickFromGallery,
-                        iconSize: 40,
+                        iconSize: 32, 
                       ),
                       GestureDetector(
                         onTap: _takePicture,
-                        child: const Icon(Icons.circle, color: Colors.white, size: 60),
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
+                          ),
+                          child: const Icon(Icons.circle, color: Colors.white, size: 50),
+                        ),
                       ),
-                      const SizedBox(width: 40), 
+                      const SizedBox(width: 40),
                     ],
                   )
                 : Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
+                    children: [   
                       IconButton(
-                        icon: const Icon(Icons.close, color: Colors.white),
-                        onPressed: _retakePicture,
-                        iconSize: 40,
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.check, color: Colors.white),
+                        icon: const Icon(Icons.check_circle_rounded, color: Colors.white),
                         onPressed: _confirmPicture,
-                        iconSize: 40,
+                        iconSize: 50,
                       ),
                     ],
                   ),
-          ),
-
-          Positioned(
-            top: 40,
-            left: 20,
-            child: IconButton(
-              icon: const Icon(Icons.close, color: Colors.white, size: 30),
-              onPressed: () => Navigator.pop(context),
-            ),
           ),
         ],
       ),
