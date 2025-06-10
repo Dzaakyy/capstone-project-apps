@@ -2,16 +2,16 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:frontend/diagnosiscore.dart';
 import 'package:camera/camera.dart';
-import 'home.dart'; // Import HomeScreen instead of HomePage
+import 'home.dart'; 
 
 class DiagnosisPage extends StatefulWidget {
   final DiagnosisResult diagnosisResult;
-  final List<CameraDescription> cameras; // Add cameras parameter
+  final List<CameraDescription> cameras; 
   
   const DiagnosisPage({
     super.key,
     required this.diagnosisResult,
-    required this.cameras, // Make cameras required
+    required this.cameras,
   });
 
   @override
@@ -27,12 +27,10 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
     });
 
     try {
-      // Save the diagnosis result
       bool saveSuccess = await DiagnosisService.saveDiagnosis(widget.diagnosisResult);
       
       if (saveSuccess) {
         if (mounted) {
-          // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Diagnosis berhasil disimpan'),
@@ -41,13 +39,12 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
             ),
           );
           
-          // Navigate to HomeScreen with cameras parameter
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
               builder: (context) => HomeScreen(cameras: widget.cameras)
             ),
-            (route) => false, // Remove all previous routes
+            (route) => false, 
           );
         }
       } else {
@@ -106,7 +103,6 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
         actions: [
           IconButton(
             onPressed: _isSaving ? null : () {
-              // Handle menu action
             },
             icon: const Icon(
               Icons.more_vert,
@@ -122,7 +118,6 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Title - Display prediction from backend
               Text(
                 widget.diagnosisResult.prediction,
                 style: const TextStyle(
@@ -133,7 +128,6 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
               ),
               const SizedBox(height: 8),
               
-              // Confidence from backend
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
@@ -151,7 +145,6 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
               ),
               const SizedBox(height: 20),
               
-              // Image Container - Display the analyzed image
               Container(
                 width: double.infinity,
                 height: 200,
@@ -183,7 +176,6 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
               ),
               const SizedBox(height: 24),
               
-              // Gejala Section - Placeholder for now as requested
               Row(
                 children: [
                   Icon(
@@ -204,7 +196,6 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
               ),
               const SizedBox(height: 12),
               
-              // Symptoms placeholder
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
@@ -224,7 +215,6 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
               ),
               const SizedBox(height: 24),
               
-              // Info lebih lanjut Section - Placeholder for now as requested
               Row(
                 children: [
                   Icon(
@@ -245,7 +235,6 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
               ),
               const SizedBox(height: 12),
               
-              // Additional Info placeholder
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
@@ -265,7 +254,6 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
               ),
               const SizedBox(height: 40),
               
-              // Confirmation Button - Now triggers save and navigation
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

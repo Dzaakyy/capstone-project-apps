@@ -38,12 +38,10 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
     });
 
     try {
-      // Save the diagnosis result
       bool saveSuccess = await DiagnosisService.saveDiagnosis(widget.diagnosisResult);
       
       if (saveSuccess) {
         if (mounted) {
-          // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Diagnosis berhasil disimpan'),
@@ -52,7 +50,6 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
             ),
           );
           
-          // Navigate back to home or previous screen
           Navigator.pop(context);
         }
       } else {
@@ -228,7 +225,6 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
               ),
               const SizedBox(height: 32),
               
-              // Rekomendasi Perawatan Section
               Row(
                 children: [
                   Container(
@@ -256,7 +252,6 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
               ),
               const SizedBox(height: 16),
               
-              // Recommendation Text
               Text(
                 recommendation,
                 style: TextStyle(
@@ -268,7 +263,6 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
               ),
               const SizedBox(height: 40),
               
-              // Save Button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
