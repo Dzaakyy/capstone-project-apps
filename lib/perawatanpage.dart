@@ -1,14 +1,18 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:frontend/diagnosiscore.dart';
+import 'package:camera/camera.dart';
+import 'home.dart'; 
 
 class RekomendasiPerawatanPage extends StatefulWidget {
   final DiagnosisResult diagnosisResult;
+  final List<CameraDescription> cameras; 
   final String recommendationText;
   
   const RekomendasiPerawatanPage({
     super.key,
     required this.diagnosisResult,
+    required this.cameras, 
     this.recommendationText = '',
   });
 
@@ -29,7 +33,7 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
   }
 
   String get _defaultRecommendation {
-    return 'Untuk mengatasi bercak hitam bakteri pada mangga, gunakan bakterisida berbasis tembaga seperti tembaga hidroksida atau tembaga oksiklorida dengan dosis 2-3 g per liter air, lalu semprotkan setiap 7-10 hari pada pagi atau sore hari pada awal musim hujan, sesuai Extensionist University of Florida (2020). Spot Management". Pastikan untuk membuang dan membakar daun yang terinfeksi untuk mencegah penyebaran bakteri, seperti dianjurkan oleh FAO Plant Production and Protection Division (2018). Selain itu, siram tanaman di pangkal batang, hindari daun, dan pastikan drainase yang baik untuk mengurangi kelembaban berlebih di Queensland Government Department of Agriculture and Fisheries (2019). Untuk pencegahan jangka panjang, gunakan varietas mangga yang tahan terhadap penyakit atau "Ketti" untuk pencegahan, sesuai studi di Journal of Phytopathology (2019), serta pangkas cabang yang terinfeksi setiap 2-3 bulan untuk meningkatkan sirkulasi udara. Jika infeksi parah, konsultasikan dengan ahli pertanian atau gunakan UC ANR dalam "Mango Pest and Disease Management" (2020).';
+    return '';
   }
 
   Future<void> _saveDiagnosis() async {
@@ -50,7 +54,13 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
             ),
           );
           
-          Navigator.pop(context);
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HomeScreen(cameras: widget.cameras)
+            ),
+            (route) => false, 
+          );
         }
       } else {
         if (mounted) {
@@ -108,7 +118,6 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
         actions: [
           IconButton(
             onPressed: _isSaving ? null : () {
-              // Handle menu action
             },
             icon: const Icon(
               Icons.more_vert,
@@ -124,7 +133,6 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Hasil Diagnosis Section
               Row(
                 children: [
                   Container(
@@ -152,20 +160,18 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
               ),
               const SizedBox(height: 16),
               
-              // Diagnosis Result Card
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: Colors.blue.shade400,
+                    color: Colors.black87,
                     width: 2,
                   ),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
-                    // Image
                     Container(
                       width: 60,
                       height: 60,
@@ -189,7 +195,6 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
                     ),
                     const SizedBox(width: 16),
                     
-                    // Diagnosis Text
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -214,7 +219,6 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
                       ),
                     ),
                     
-                    // Arrow Icon
                     Icon(
                       Icons.arrow_forward_ios,
                       size: 16,

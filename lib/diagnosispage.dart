@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:frontend/diagnosiscore.dart';
 import 'package:camera/camera.dart';
-import 'home.dart'; 
+import 'package:frontend/perawatanpage.dart';
 
 class DiagnosisPage extends StatefulWidget {
   final DiagnosisResult diagnosisResult;
@@ -19,50 +19,17 @@ class DiagnosisPage extends StatefulWidget {
 }
 
 class _DiagnosisPageState extends State<DiagnosisPage> {
-  bool _isSaving = false;
 
-  Future<void> _confirmAndSaveDiagnosis() async {
-    setState(() {
-      _isSaving = true;
-    });
-
-    try {
-      bool saveSuccess = await DiagnosisService.saveDiagnosis(widget.diagnosisResult);
-      
-      if (saveSuccess) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Diagnosis berhasil disimpan'),
-              backgroundColor: Colors.green,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-          
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (context) => HomeScreen(cameras: widget.cameras)
-            ),
-            (route) => false, 
-          );
-        }
-      } else {
-        if (mounted) {
-          _showErrorSnackBar('Gagal menyimpan diagnosis. Silakan coba lagi.');
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        _showErrorSnackBar('Error: ${e.toString()}');
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSaving = false;
-        });
-      }
-    }
+  void _navigateToRecommendation() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => RekomendasiPerawatanPage(
+          diagnosisResult: widget.diagnosisResult,
+          cameras: widget.cameras, 
+        ),
+      ),
+    );
   }
 
   void _showErrorSnackBar(String message) {
@@ -83,7 +50,7 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          onPressed: _isSaving ? null : () {
+          onPressed: () {
             Navigator.pop(context);
           },
           icon: const Icon(
@@ -102,7 +69,8 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
         ),
         actions: [
           IconButton(
-            onPressed: _isSaving ? null : () {
+            onPressed: () {
+              // Handle menu action
             },
             icon: const Icon(
               Icons.more_vert,
@@ -257,7 +225,7 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _isSaving ? null : _confirmAndSaveDiagnosis,
+                  onPressed: _navigateToRecommendation,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue.shade600,
                     foregroundColor: Colors.white,
@@ -267,35 +235,13 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
                     ),
                     elevation: 0,
                   ),
-                  child: _isSaving
-                      ? const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            ),
-                            SizedBox(width: 12),
-                            Text(
-                              'Menyimpan...',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        )
-                      : const Text(
-                          'Konfirmasi & lihat pengobatan',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                  child: const Text(
+                    'Konfirmasi & lihat pengobatan',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
