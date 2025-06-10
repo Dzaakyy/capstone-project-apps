@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/diagnosiscore.dart';
 import 'package:camera/camera.dart';
 import 'home.dart'; 
+import 'package:frontend/diagnosispage.dart'; 
 
 class RekomendasiPerawatanPage extends StatefulWidget {
   final DiagnosisResult diagnosisResult;
@@ -101,12 +102,6 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          onPressed: _isSaving ? null : () {
-            Navigator.pop(context);
-          },
-          icon: const Icon(Icons.arrow_back_outlined, color: Colors.black),
-        ),
         title: Text(
           _currentDate,
           style: const TextStyle(
@@ -115,17 +110,7 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
             fontWeight: FontWeight.w500,
           ),
         ),
-        actions: [
-          IconButton(
-            onPressed: _isSaving ? null : () {
-            },
-            icon: const Icon(
-              Icons.more_vert,
-              color: Colors.black,
-              size: 22,
-            ),
-          ),
-        ],
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -160,71 +145,85 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
               ),
               const SizedBox(height: 16),
               
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.black87,
-                    width: 2,
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DiagnosisPage(
+                        diagnosisResult: widget.diagnosisResult,
+                        cameras: widget.cameras,
+                        showBackButton: true, 
+                      ),
+                    ),
+                  );
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.black87,
+                      width: 2,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        color: Colors.grey.shade200,
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: Colors.grey.shade200,
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: widget.diagnosisResult.imagePath.isNotEmpty
+                              ? Image.file(
+                                  File(widget.diagnosisResult.imagePath),
+                                  fit: BoxFit.cover,
+                                )
+                              : Icon(
+                                  Icons.image,
+                                  size: 30,
+                                  color: Colors.grey.shade500,
+                                ),
+                        ),
                       ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: widget.diagnosisResult.imagePath.isNotEmpty
-                            ? Image.file(
-                                File(widget.diagnosisResult.imagePath),
-                                fit: BoxFit.cover,
-                              )
-                            : Icon(
-                                Icons.image,
-                                size: 30,
-                                color: Colors.grey.shade500,
+                      const SizedBox(width: 16),
+                      
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.diagnosisResult.prediction,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black,
                               ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.diagnosisResult.prediction,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black,
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Bakteri',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
+                            const SizedBox(height: 4),
+                            Text(
+                              'Bakteri',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    
-                    Icon(
-                      Icons.arrow_forward_ios,
-                      size: 16,
-                      color: Colors.grey.shade600,
-                    ),
-                  ],
+                      
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        size: 16,
+                        color: Colors.grey.shade600,
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 32),
@@ -319,4 +318,3 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
     );
   }
 }
-

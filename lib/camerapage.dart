@@ -89,13 +89,12 @@ class _CameraPageState extends State<CameraPage> {
       );
       
       if (mounted) {
-        // Navigate to DiagnosisPage with the result AND cameras parameter
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => DiagnosisPage(
               diagnosisResult: diagnosisResult,
-              cameras: widget.cameras, // Pass cameras parameter
+              cameras: widget.cameras, 
             ),
           ),
         );
@@ -159,7 +158,6 @@ class _CameraPageState extends State<CameraPage> {
                 ),
               ),
               
-              // Camera/Image Preview
               Expanded(
                 flex: 9, 
                 child: Container(
@@ -176,7 +174,6 @@ class _CameraPageState extends State<CameraPage> {
                 ),
               ),
               
-              // Bottom Controls
               Container(
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 color: Colors.black,
@@ -227,7 +224,6 @@ class _CameraPageState extends State<CameraPage> {
             ],
           ),
           
-          // Loading Overlay
           if (_isProcessingDiagnosis)
             Container(
               color: Colors.black.withOpacity(0.7),

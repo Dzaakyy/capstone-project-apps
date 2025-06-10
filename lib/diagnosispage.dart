@@ -7,11 +7,13 @@ import 'package:frontend/perawatanpage.dart';
 class DiagnosisPage extends StatefulWidget {
   final DiagnosisResult diagnosisResult;
   final List<CameraDescription> cameras; 
+  final bool showBackButton; // New parameter
   
   const DiagnosisPage({
     super.key,
     required this.diagnosisResult,
     required this.cameras,
+    this.showBackButton = false, // Default to false
   });
 
   @override
@@ -49,16 +51,6 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: const Icon(
-            Icons.arrow_back_rounded,
-            size: 22,
-            color: Colors.black,
-          ),
-        ),
         title: const Text(
           'Diagnosis',
           style: TextStyle(
@@ -67,18 +59,9 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
             fontWeight: FontWeight.w500,
           ),
         ),
-        actions: [
-          IconButton(
-            onPressed: () {
-              // Handle menu action
-            },
-            icon: const Icon(
-              Icons.more_vert,
-              color: Colors.black,
-              size: 22,
-            ),
-          ),
-        ],
+        centerTitle: true,
+        automaticallyImplyLeading: widget.showBackButton,
+       
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -173,7 +156,7 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
                   border: Border.all(color: Colors.grey.shade200),
                 ),
                 child: Text(
-                  'Gejala akan ditampilkan di sini sesuai dengan data dari backend...',
+                  'Gejala akan ditampilkan di sini sesuai dengan data dari backend...', 
                   style: TextStyle(
                     color: Colors.grey.shade600,
                     fontSize: 14,
@@ -212,7 +195,7 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
                   border: Border.all(color: Colors.grey.shade200),
                 ),
                 child: Text(
-                  'Info lebih lanjut akan ditampilkan di sini sesuai dengan data dari backend...',
+                  'Info lebih lanjut akan ditampilkan di sini sesuai dengan data dari backend...', 
                   style: TextStyle(
                     color: Colors.grey.shade600,
                     fontSize: 14,
@@ -252,4 +235,5 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
     );
   }
 }
+
 
