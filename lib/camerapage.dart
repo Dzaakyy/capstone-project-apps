@@ -4,6 +4,7 @@ import 'package:frontend/diagnosiscore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'diagnosispage.dart';
+import 'package:logger/logger.dart'; 
 
 class CameraPage extends StatefulWidget {
   final List<CameraDescription> cameras;
@@ -19,6 +20,7 @@ class _CameraPageState extends State<CameraPage> {
   bool _isProcessingDiagnosis = false;
   final ImagePicker _picker = ImagePicker();
   XFile? _capturedImage;
+  final logger = Logger();
 
   @override
   void initState() {
@@ -33,10 +35,10 @@ class _CameraPageState extends State<CameraPage> {
       if (e is CameraException) {
         switch (e.code) {
           case 'CameraAccessDenied':
-            print('User denied camera access.');
+            logger.i('User denied camera access.');
             break;
           default:
-            print('Error: ${e.code}\n${e.description}');
+            logger.i('Error: ${e.code}\n${e.description}');
             break;
         }
       }

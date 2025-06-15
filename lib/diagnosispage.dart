@@ -7,13 +7,13 @@ import 'package:frontend/perawatanpage.dart';
 class DiagnosisPage extends StatefulWidget {
   final DiagnosisResult diagnosisResult;
   final List<CameraDescription> cameras; 
-  final bool showBackButton; // New parameter
+  final bool showBackButton;
   
   const DiagnosisPage({
     super.key,
     required this.diagnosisResult,
     required this.cameras,
-    this.showBackButton = false, // Default to false
+    this.showBackButton = false, 
   });
 
   @override
@@ -34,7 +34,7 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
     );
   }
 
-  void _showErrorSnackBar(String message) {
+  void showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -156,7 +156,7 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
                   border: Border.all(color: Colors.grey.shade200),
                 ),
                 child: Text(
-                  'Gejala akan ditampilkan di sini sesuai dengan data dari backend...', 
+                  '...', 
                   style: TextStyle(
                     color: Colors.grey.shade600,
                     fontSize: 14,
@@ -195,7 +195,7 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
                   border: Border.all(color: Colors.grey.shade200),
                 ),
                 child: Text(
-                  'Info lebih lanjut akan ditampilkan di sini sesuai dengan data dari backend...', 
+                  '...', 
                   style: TextStyle(
                     color: Colors.grey.shade600,
                     fontSize: 14,

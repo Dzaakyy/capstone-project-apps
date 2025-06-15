@@ -1,6 +1,11 @@
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:mime/mime.dart' as mime;
+import 'package:http_parser/http_parser.dart';
+import 'package:logger/logger.dart'; 
+
+final logger = Logger(); 
 
 class DiagnosisResult {
   final String prediction;
@@ -36,48 +41,53 @@ class DiagnosisService {
 
   static Future<DiagnosisResult> performDiagnosis(File imageFile) async {
     try {
+      var mimeType = mime.lookupMimeType(imageFile.path) ?? 'unknown';
+      logger.i('Mengirim file: ${imageFile.path}, MIME Type: $mimeType');
+      
       var request = http.MultipartRequest(
         'POST',
         Uri.parse('$_baseUrl/prediksi/create'),
       );
       
-      request.files.add(
-        await http.MultipartFile.fromPath('image', imageFile.path)
-      );
+      request.files.add(await http.MultipartFile.fromPath(
+        'image',
+        imageFile.path,
+        contentType: mimeType != 'unknown' ? MediaType.parse(mimeType) : null,
+      ));
       
       var response = await request.send();
+      logger.i('Status Code: ${response.statusCode}');
+      var responseData = await response.stream.bytesToString();
+      logger.i('Response Data: $responseData');
       
       if (response.statusCode == 200) {
-        var responseData = await response.stream.bytesToString();
         var jsonResponse = jsonDecode(responseData);
-        
         if (jsonResponse['error'] != null) {
           throw Exception(jsonResponse['error']);
         }
-        
         return DiagnosisResult.fromJson(jsonResponse, imageFile.path);
       } else {
-        throw Exception('Failed to process prediction (Status: ${response.statusCode})');
+        throw Exception('Failed to process prediction (Status: ${response.statusCode}) - $responseData');
       }
     } catch (e) {
+      logger.e('Error: ${e.toString()}');
       throw Exception('Error during diagnosis: ${e.toString()}');
     }
   }
 
   static Future<bool> saveDiagnosis(DiagnosisResult diagnosisResult) async {
     try {
-      
-      print('Saving diagnosis result:');
-      print('Prediction: ${diagnosisResult.prediction}');
-      print('Confidence: ${diagnosisResult.confidence}');
-      print('Image Path: ${diagnosisResult.imagePath}');
-      print('Timestamp: ${DateTime.now()}');
+      logger.i('Saving diagnosis result:');
+      logger.i('Prediction: ${diagnosisResult.prediction}');
+      logger.i('Confidence: ${diagnosisResult.confidence}');
+      logger.i('Image Path: ${diagnosisResult.imagePath}');
+      logger.i('Timestamp: ${DateTime.now()}');
       
       await Future.delayed(const Duration(milliseconds: 500));
       
       return true;
     } catch (e) {
-      print('Error saving diagnosis: ${e.toString()}');
+      logger.e('Error saving diagnosis: ${e.toString()}');
       return false;
     }
   }
@@ -94,9 +104,12 @@ class DiagnosisService {
       request.fields['timestamp'] = DateTime.now().toIso8601String();
       
       if (diagnosisResult.imagePath.isNotEmpty) {
-        request.files.add(
-          await http.MultipartFile.fromPath('image', diagnosisResult.imagePath)
-        );
+        var mimeType = mime.lookupMimeType(diagnosisResult.imagePath) ?? 'unknown';
+        request.files.add(await http.MultipartFile.fromPath(
+          'image',
+          diagnosisResult.imagePath,
+          contentType: mimeType != 'unknown' ? MediaType.parse(mimeType) : null,
+        ));
       }
       
       var response = await request.send();
@@ -107,9 +120,8 @@ class DiagnosisService {
         throw Exception('Failed to save diagnosis (Status: ${response.statusCode})');
       }
     } catch (e) {
-      print('Error saving diagnosis to backend: ${e.toString()}');
+      logger.e('Error saving diagnosis to backend: ${e.toString()}');
       return false;
     }
   }
 }
-
