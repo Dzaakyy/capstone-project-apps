@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:camera/camera.dart'; // Import camera for CameraDescription
+import 'package:camera/camera.dart'; 
 import 'package:frontend/homepage.dart';
 import 'package:frontend/komunitas.dart';
-import 'package:frontend/profile.dart';
+import 'package:frontend/profilepage.dart';
 
 class HomeScreen extends StatefulWidget {
   final List<CameraDescription> cameras;
@@ -22,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
     widgetList = [
       HomePage(cameras: widget.cameras), // Pass cameras to HomePage
       KomunitasScreen(),
-      ProfileScreen()
+      ProfileScreen(cameras: widget.cameras)
     ];
   }
 

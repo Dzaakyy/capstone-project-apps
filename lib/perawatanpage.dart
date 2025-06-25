@@ -2,23 +2,24 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:frontend/diagnosiscore.dart';
 import 'package:camera/camera.dart';
-import 'home.dart'; 
-import 'package:frontend/diagnosispage.dart'; 
+import 'package:frontend/home.dart';
+import 'package:frontend/diagnosispage.dart';
 
 class RekomendasiPerawatanPage extends StatefulWidget {
   final DiagnosisResult diagnosisResult;
-  final List<CameraDescription> cameras; 
+  final List<CameraDescription> cameras;
   final String recommendationText;
-  
+
   const RekomendasiPerawatanPage({
     super.key,
     required this.diagnosisResult,
-    required this.cameras, 
+    required this.cameras,
     this.recommendationText = '',
   });
 
   @override
-  State<RekomendasiPerawatanPage> createState() => _RekomendasiPerawatanPageState();
+  State<RekomendasiPerawatanPage> createState() =>
+      _RekomendasiPerawatanPageState();
 }
 
 class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
@@ -27,14 +28,27 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
   String get _currentDate {
     final now = DateTime.now();
     final months = [
-      '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+      '',
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember'
     ];
     return '${now.day} ${months[now.month]}';
   }
 
   String get _defaultRecommendation {
-    return '';
+    return widget.diagnosisResult.rekomendasiPerawatan.isNotEmpty
+        ? widget.diagnosisResult.rekomendasiPerawatan
+        : 'Tidak ada rekomendasi perawatan tersedia.';
   }
 
   Future<void> _saveDiagnosis() async {
@@ -43,8 +57,9 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
     });
 
     try {
+      // Simpan diagnosis secara lokal (opsional, jika diperlukan)
       bool saveSuccess = await DiagnosisService.saveDiagnosis(widget.diagnosisResult);
-      
+
       if (saveSuccess) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -54,13 +69,13 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
               behavior: SnackBarBehavior.floating,
             ),
           );
-          
+
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
-              builder: (context) => HomeScreen(cameras: widget.cameras)
+              builder: (context) => HomeScreen(cameras: widget.cameras),
             ),
-            (route) => false, 
+            (route) => false,
           );
         }
       } else {
@@ -93,8 +108,8 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
 
   @override
   Widget build(BuildContext context) {
-    final recommendation = widget.recommendationText.isNotEmpty 
-        ? widget.recommendationText 
+    final recommendation = widget.recommendationText.isNotEmpty
+        ? widget.recommendationText
         : _defaultRecommendation;
 
     return Scaffold(
@@ -144,7 +159,6 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
                 ],
               ),
               const SizedBox(height: 16),
-              
               GestureDetector(
                 onTap: () {
                   Navigator.push(
@@ -153,7 +167,7 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
                       builder: (context) => DiagnosisPage(
                         diagnosisResult: widget.diagnosisResult,
                         cameras: widget.cameras,
-                        showBackButton: true, 
+                        showBackButton: true,
                       ),
                     ),
                   );
@@ -192,13 +206,12 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
                         ),
                       ),
                       const SizedBox(width: 16),
-                      
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              widget.diagnosisResult.prediction,
+                              widget.diagnosisResult.namaPenyakit,
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -207,7 +220,7 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Bakteri',
+                              'Bakteri', // Ganti dengan data spesifik jika tersedia
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey.shade600,
@@ -216,7 +229,6 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
                           ],
                         ),
                       ),
-                      
                       Icon(
                         Icons.arrow_forward_ios,
                         size: 16,
@@ -227,7 +239,6 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
                 ),
               ),
               const SizedBox(height: 32),
-              
               Row(
                 children: [
                   Container(
@@ -254,7 +265,6 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
                 ],
               ),
               const SizedBox(height: 16),
-              
               Text(
                 recommendation,
                 style: TextStyle(
@@ -265,7 +275,6 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
                 textAlign: TextAlign.justify,
               ),
               const SizedBox(height: 40),
-              
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

@@ -6,14 +6,14 @@ import 'package:frontend/perawatanpage.dart';
 
 class DiagnosisPage extends StatefulWidget {
   final DiagnosisResult diagnosisResult;
-  final List<CameraDescription> cameras; 
+  final List<CameraDescription> cameras;
   final bool showBackButton;
-  
+
   const DiagnosisPage({
     super.key,
     required this.diagnosisResult,
     required this.cameras,
-    this.showBackButton = false, 
+    this.showBackButton = false,
   });
 
   @override
@@ -21,14 +21,14 @@ class DiagnosisPage extends StatefulWidget {
 }
 
 class _DiagnosisPageState extends State<DiagnosisPage> {
-
   void _navigateToRecommendation() {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => RekomendasiPerawatanPage(
           diagnosisResult: widget.diagnosisResult,
-          cameras: widget.cameras, 
+          cameras: widget.cameras,
+          recommendationText: widget.diagnosisResult.rekomendasiPerawatan,
         ),
       ),
     );
@@ -61,7 +61,6 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
         ),
         centerTitle: true,
         automaticallyImplyLeading: widget.showBackButton,
-       
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -70,7 +69,7 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                widget.diagnosisResult.prediction,
+                widget.diagnosisResult.namaPenyakit,
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
@@ -78,7 +77,6 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
                 ),
               ),
               const SizedBox(height: 8),
-              
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
@@ -95,7 +93,6 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
                 ),
               ),
               const SizedBox(height: 20),
-              
               Container(
                 width: double.infinity,
                 height: 200,
@@ -126,7 +123,6 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
                 ),
               ),
               const SizedBox(height: 24),
-              
               Row(
                 children: [
                   Icon(
@@ -146,7 +142,6 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
                 ],
               ),
               const SizedBox(height: 12),
-              
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
@@ -156,16 +151,14 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
                   border: Border.all(color: Colors.grey.shade200),
                 ),
                 child: Text(
-                  '...', 
+                  widget.diagnosisResult.gejala,
                   style: TextStyle(
                     color: Colors.grey.shade600,
                     fontSize: 14,
-                    fontStyle: FontStyle.italic,
                   ),
                 ),
               ),
               const SizedBox(height: 24),
-              
               Row(
                 children: [
                   Icon(
@@ -185,7 +178,6 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
                 ],
               ),
               const SizedBox(height: 12),
-              
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
@@ -195,16 +187,14 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
                   border: Border.all(color: Colors.grey.shade200),
                 ),
                 child: Text(
-                  '...', 
+                  widget.diagnosisResult.namaPenyakit,
                   style: TextStyle(
                     color: Colors.grey.shade600,
                     fontSize: 14,
-                    fontStyle: FontStyle.italic,
                   ),
                 ),
               ),
               const SizedBox(height: 40),
-              
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -235,5 +225,3 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
     );
   }
 }
-
-

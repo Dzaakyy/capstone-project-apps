@@ -3,8 +3,8 @@ import 'package:camera/camera.dart';
 import 'package:frontend/diagnosiscore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import 'diagnosispage.dart';
-import 'package:logger/logger.dart'; 
+import 'package:frontend/diagnosispage.dart';
+import 'package:logger/logger.dart';
 
 class CameraPage extends StatefulWidget {
   final List<CameraDescription> cameras;
@@ -87,16 +87,16 @@ class _CameraPageState extends State<CameraPage> {
 
     try {
       final diagnosisResult = await DiagnosisService.performDiagnosis(
-        File(_capturedImage!.path)
+        File(_capturedImage!.path),
       );
-      
+
       if (mounted) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => DiagnosisPage(
               diagnosisResult: diagnosisResult,
-              cameras: widget.cameras, 
+              cameras: widget.cameras,
             ),
           ),
         );
@@ -127,9 +127,9 @@ class _CameraPageState extends State<CameraPage> {
 
   void _handleBackPress() {
     if (_capturedImage != null) {
-      _retakePicture(); 
+      _retakePicture();
     } else {
-      Navigator.pop(context); 
+      Navigator.pop(context);
     }
   }
 
@@ -151,7 +151,7 @@ class _CameraPageState extends State<CameraPage> {
             children: [
               Container(
                 color: Colors.black,
-                height: 80, 
+                height: 80,
                 padding: const EdgeInsets.only(left: 10, top: 5),
                 alignment: Alignment.centerLeft,
                 child: IconButton(
@@ -159,12 +159,11 @@ class _CameraPageState extends State<CameraPage> {
                   onPressed: _isProcessingDiagnosis ? null : _handleBackPress,
                 ),
               ),
-              
               Expanded(
-                flex: 9, 
+                flex: 9,
                 child: Container(
                   color: Colors.black,
-                  width: double.infinity, 
+                  width: double.infinity,
                   child: _capturedImage == null
                       ? CameraPreview(_controller)
                       : Image.file(
@@ -175,7 +174,6 @@ class _CameraPageState extends State<CameraPage> {
                         ),
                 ),
               ),
-              
               Container(
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 color: Colors.black,
@@ -186,7 +184,7 @@ class _CameraPageState extends State<CameraPage> {
                           IconButton(
                             icon: const Icon(Icons.photo_library, color: Colors.white),
                             onPressed: _isProcessingDiagnosis ? null : _pickFromGallery,
-                            iconSize: 32, 
+                            iconSize: 32,
                           ),
                           GestureDetector(
                             onTap: _isProcessingDiagnosis ? null : _takePicture,
@@ -195,14 +193,14 @@ class _CameraPageState extends State<CameraPage> {
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: _isProcessingDiagnosis ? Colors.grey : Colors.white, 
-                                  width: 2
+                                  color: _isProcessingDiagnosis ? Colors.grey : Colors.white,
+                                  width: 2,
                                 ),
                               ),
                               child: Icon(
-                                Icons.circle, 
-                                color: _isProcessingDiagnosis ? Colors.grey : Colors.white, 
-                                size: 50
+                                Icons.circle,
+                                color: _isProcessingDiagnosis ? Colors.grey : Colors.white,
+                                size: 50,
                               ),
                             ),
                           ),
@@ -211,11 +209,11 @@ class _CameraPageState extends State<CameraPage> {
                       )
                     : Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [   
+                        children: [
                           IconButton(
                             icon: Icon(
-                              Icons.check_circle_rounded, 
-                              color: _isProcessingDiagnosis ? Colors.grey : Colors.white
+                              Icons.check_circle_rounded,
+                              color: _isProcessingDiagnosis ? Colors.grey : Colors.white,
                             ),
                             onPressed: _isProcessingDiagnosis ? null : _confirmPicture,
                             iconSize: 50,
@@ -225,7 +223,6 @@ class _CameraPageState extends State<CameraPage> {
               ),
             ],
           ),
-          
           if (_isProcessingDiagnosis)
             Container(
               color: Colors.black.withOpacity(0.7),
@@ -263,4 +260,3 @@ class _CameraPageState extends State<CameraPage> {
     );
   }
 }
-
