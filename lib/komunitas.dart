@@ -8,6 +8,7 @@ import 'dart:async';
 import 'komunitascore.dart';
 import 'tanyakomunitas.dart';
 import 'komunitasdetailscreen.dart';
+import 'userpostscreen.dart'; // Perbaiki nama file menjadi 'userpostsscreen.dart'
 
 final logger = Logger();
 
@@ -48,8 +49,7 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
       if (token == null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text('Token tidak ditemukan, silakan login kembali')),
+            const SnackBar(content: Text('Token tidak ditemukan, silakan login kembali')),
           );
         }
         setState(() => isLoading = false);
@@ -68,8 +68,7 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
         final List<dynamic> data = json.decode(response.body);
         if (mounted) {
           setState(() {
-            komunitasList =
-                data.map((json) => Komunitas.fromJson(json)).toList();
+            komunitasList = data.map((json) => Komunitas.fromJson(json)).toList();
             isLoading = false;
           });
           logger.i('Fetched ${komunitasList.length} posts');
@@ -77,16 +76,14 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
       } else if (response.statusCode == 401) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text('Sesi login habis, silakan login kembali')),
+            const SnackBar(content: Text('Sesi login habis, silakan login kembali')),
           );
         }
         setState(() => isLoading = false);
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text('Gagal memuat data: ${response.statusCode}')),
+            SnackBar(content: Text('Gagal memuat data: ${response.statusCode}')),
           );
         }
         setState(() => isLoading = false);
@@ -119,8 +116,7 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
       if (token == null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text('Token tidak ditemukan, silakan login kembali')),
+            const SnackBar(content: Text('Token tidak ditemukan, silakan login kembali')),
           );
         }
         setState(() => isLoading = false);
@@ -128,7 +124,7 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
       }
 
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:3000/api/post/cari?query=$query'),
+        Uri.parse('http://10.0.2.2:3000/api/komunitas/cari?query=$query'),
         headers: {'Authorization': 'Bearer $token'},
       );
 
@@ -136,8 +132,7 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
         final List<dynamic> data = json.decode(response.body);
         if (mounted) {
           setState(() {
-            filteredKomunitasList =
-                data.map((json) => Komunitas.fromJson(json)).toList();
+            filteredKomunitasList = data.map((json) => Komunitas.fromJson(json)).toList();
             isSearching = true;
             isLoading = false;
           });
@@ -145,9 +140,7 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content:
-                    Text('Gagal melakukan pencarian: ${response.statusCode}')),
+            SnackBar(content: Text('Gagal melakukan pencarian: ${response.statusCode}')),
           );
         }
         setState(() => isLoading = false);
@@ -231,12 +224,10 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
                         decoration: InputDecoration(
                           hintText: 'Cari Keluhan Tanaman',
                           border: InputBorder.none,
-                          prefixIcon:
-                              const Icon(Icons.search, color: Colors.grey),
+                          prefixIcon: const Icon(Icons.search, color: Colors.grey),
                           suffixIcon: _searchController.text.isNotEmpty
                               ? IconButton(
-                                  icon: const Icon(Icons.clear,
-                                      color: Colors.grey),
+                                  icon: const Icon(Icons.clear, color: Colors.grey),
                                   onPressed: () {
                                     _searchController.clear();
                                     _onSearchChanged('');
@@ -259,9 +250,18 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
                     onPressed: () {},
                   ),
                   IconButton(
-                    icon: const Icon(Icons.email_outlined),
+                    icon: const Icon(Icons.list_rounded),
                     color: Colors.black,
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const UserPostsScreen()),
+                      ).then((_) async {
+                        if (mounted) {
+                          await fetchKomunitas(); // Perbarui data secara otomatis saat kembali
+                        }
+                      });
+                    },
                   ),
                 ],
               ),
@@ -272,8 +272,7 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
       ),
       body: Column(
         children: [
-          if (isLoading && isSearching)
-            const LinearProgressIndicator(minHeight: 2),
+          if (isLoading && isSearching) const LinearProgressIndicator(minHeight: 2),
           Expanded(
             child: isLoading && !isSearching
                 ? const Center(child: CircularProgressIndicator())
@@ -322,31 +321,24 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
                                           builder: (context) =>
                                               KomunitasDetailScreen(post: post),
                                         ),
-                                      );
-                                      setState(() {});
+                                      ).then((_) async {
+                                        if (mounted) {
+                                          await fetchKomunitas(); // Perbarui data setelah kembali dari detail
+                                        }
+                                      });
                                     },
                                     child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        if (post.image != null &&
-                                            post.image!.isNotEmpty)
+                                        if (post.image != null && post.image!.isNotEmpty)
                                           ClipRRect(
-                                            borderRadius:
-                                                const BorderRadius.vertical(
-                                                    top: Radius.circular(12)),
+                                            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                                             child: CachedNetworkImage(
                                               imageUrl: post.image!,
-                                              placeholder: (context, url) =>
-                                                  const Center(
-                                                      child:
-                                                          CircularProgressIndicator()),
-                                              errorWidget:
-                                                  (context, url, error) {
-                                                logger.e(
-                                                    'Image load error: $url, $error');
-                                                return const Icon(Icons.error,
-                                                    size: 50);
+                                              placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                                              errorWidget: (context, url, error) {
+                                                logger.e('Image load error: $url, $error');
+                                                return const Icon(Icons.error, size: 50);
                                               },
                                               width: double.infinity,
                                               height: 150,
@@ -356,8 +348,7 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
                                         Padding(
                                           padding: const EdgeInsets.all(16),
                                           child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 post.username ?? 'Anonymous',
@@ -367,29 +358,23 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
                                                   color: Colors.blue,
                                                 ),
                                               ),
-                                              if (post.judul != null &&
-                                                  post.judul!.isNotEmpty)
+                                              if (post.judul != null && post.judul!.isNotEmpty)
                                                 Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          top: 15),
+                                                  padding: const EdgeInsets.only(top: 15),
                                                   child: Text(
                                                     post.judul!,
                                                     style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
+                                                      fontWeight: FontWeight.bold,
                                                       fontSize: 17,
                                                     ),
                                                     maxLines: 1,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
+                                                    overflow: TextOverflow.ellipsis,
                                                   ),
                                                 ),
                                               const SizedBox(height: 20),
                                               Text(
                                                 post.isi,
-                                                style: const TextStyle(
-                                                    fontSize: 14),
+                                                style: const TextStyle(fontSize: 14),
                                                 maxLines: 5,
                                                 overflow: TextOverflow.ellipsis,
                                               ),
@@ -398,13 +383,9 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
                                         ),
                                         const Divider(height: 10),
                                         Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 16,
-                                            vertical: 20,
-                                          ),
+                                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                                           child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                             children: [
                                               const SizedBox.shrink(),
                                               Text(
@@ -412,8 +393,7 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
                                                 style: const TextStyle(
                                                     color: Colors.blue,
                                                     fontSize: 14,
-                                                    fontWeight:
-                                                        FontWeight.bold),
+                                                    fontWeight: FontWeight.bold),
                                               ),
                                             ],
                                           ),
@@ -435,7 +415,11 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const TanyaKomunitasPage()),
-          ).then((_) => fetchKomunitas());
+          ).then((_) async {
+            if (mounted) {
+              await fetchKomunitas(); // Perbarui data setelah menambah postingan
+            }
+          });
         },
         backgroundColor: Colors.blue,
         shape: const CircleBorder(),
