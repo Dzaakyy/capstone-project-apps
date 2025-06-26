@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:logger/logger.dart';
 import 'dart:convert';
+import 'dart:async';
 import 'komunitascore.dart';
 import 'tanyakomunitas.dart';
 import 'komunitasdetailscreen.dart';
@@ -19,12 +20,23 @@ class KomunitasScreen extends StatefulWidget {
 
 class _KomunitasScreenState extends State<KomunitasScreen> {
   List<Komunitas> komunitasList = [];
+  List<Komunitas> filteredKomunitasList = [];
   bool isLoading = true;
+  bool isSearching = false;
+  final TextEditingController _searchController = TextEditingController();
+  Timer? _searchDebounce;
 
   @override
   void initState() {
     super.initState();
     fetchKomunitas();
+  }
+
+  @override
+  void dispose() {
+    _searchDebounce?.cancel();
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> fetchKomunitas() async {
@@ -90,6 +102,75 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
     }
   }
 
+  Future<void> searchKomunitas(String query) async {
+    if (query.isEmpty) {
+      setState(() {
+        isSearching = false;
+        filteredKomunitasList = [];
+      });
+      return;
+    }
+
+    setState(() => isLoading = true);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('accessToken');
+
+      if (token == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Token tidak ditemukan, silakan login kembali')),
+          );
+        }
+        setState(() => isLoading = false);
+        return;
+      }
+
+      final response = await http.get(
+        Uri.parse('http://10.0.2.2:3000/api/post/cari?query=$query'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        if (mounted) {
+          setState(() {
+            filteredKomunitasList =
+                data.map((json) => Komunitas.fromJson(json)).toList();
+            isSearching = true;
+            isLoading = false;
+          });
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content:
+                    Text('Gagal melakukan pencarian: ${response.statusCode}')),
+          );
+        }
+        setState(() => isLoading = false);
+      }
+    } catch (e) {
+      logger.e('Error searching komunitas: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Terjadi kesalahan jaringan: $e')),
+        );
+      }
+      setState(() => isLoading = false);
+    }
+  }
+
+  void _onSearchChanged(String query) {
+    if (_searchDebounce?.isActive ?? false) _searchDebounce?.cancel();
+
+    _searchDebounce = Timer(const Duration(milliseconds: 500), () {
+      searchKomunitas(query);
+    });
+  }
+
   Future<int> fetchTotalKomentar(int postId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -116,174 +197,239 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Komunitas'),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        foregroundColor: Colors.black,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {},
-            color: Colors.black,
+      extendBodyBehindAppBar: false,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(80.0),
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 2,
+                offset: Offset(0, 1),
+              )
+            ],
           ),
-        ],
+          padding: const EdgeInsets.only(top: 10),
+          child: SafeArea(
+            child: AppBar(
+              backgroundColor: Colors.white,
+              surfaceTintColor: Colors.white,
+              elevation: 0,
+              title: Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(25.0),
+                        border: Border.all(color: Colors.black, width: 1.0),
+                      ),
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Cari Keluhan Tanaman',
+                          border: InputBorder.none,
+                          prefixIcon:
+                              const Icon(Icons.search, color: Colors.grey),
+                          suffixIcon: _searchController.text.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear,
+                                      color: Colors.grey),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    _onSearchChanged('');
+                                  },
+                                )
+                              : null,
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 10.0,
+                            horizontal: 15.0,
+                          ),
+                        ),
+                        onChanged: _onSearchChanged,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  IconButton(
+                    icon: const Icon(Icons.notifications_none),
+                    color: Colors.black,
+                    onPressed: () {},
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.email_outlined),
+                    color: Colors.black,
+                    onPressed: () {},
+                  ),
+                ],
+              ),
+              automaticallyImplyLeading: false,
+            ),
+          ),
+        ),
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : komunitasList.isEmpty
-              ? const Center(child: Text('Tidak ada postingan'))
-              : RefreshIndicator(
-                  onRefresh: fetchKomunitas,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: komunitasList.length,
-                    itemBuilder: (context, index) {
-                      final post = komunitasList[index];
-                      return FutureBuilder<int>(
-                        future: fetchTotalKomentar(post.idKomunitas!),
-                        builder: (context, snapshot) {
-                          final totalKomentar = snapshot.data ?? 0;
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.1),
-                                  spreadRadius: 1,
-                                  blurRadius: 5,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: InkWell(
-                              onTap: () async {
-                                await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        KomunitasDetailScreen(post: post),
+      body: Column(
+        children: [
+          if (isLoading && isSearching)
+            const LinearProgressIndicator(minHeight: 2),
+          Expanded(
+            child: isLoading && !isSearching
+                ? const Center(child: CircularProgressIndicator())
+                : (isSearching ? filteredKomunitasList : komunitasList).isEmpty
+                    ? Center(
+                        child: Text(
+                          isSearching
+                              ? 'Tidak ditemukan hasil pencarian'
+                              : 'Tidak ada postingan',
+                        ),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: fetchKomunitas,
+                        child: ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: isSearching
+                              ? filteredKomunitasList.length
+                              : komunitasList.length,
+                          itemBuilder: (context, index) {
+                            final post = isSearching
+                                ? filteredKomunitasList[index]
+                                : komunitasList[index];
+                            return FutureBuilder<int>(
+                              future: fetchTotalKomentar(post.idKomunitas!),
+                              builder: (context, snapshot) {
+                                final totalKomentar = snapshot.data ?? 0;
+                                return Container(
+                                  margin: const EdgeInsets.only(bottom: 16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.1),
+                                        spreadRadius: 1,
+                                        blurRadius: 5,
+                                        offset: const Offset(0, 2),
+                                      )
+                                    ],
                                   ),
-                                );
-                                setState(() {});
-                              },
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  if (post.image != null &&
-                                      post.image!.isNotEmpty)
-                                    ClipRRect(
-                                      borderRadius: const BorderRadius.vertical(
-                                          top: Radius.circular(12)),
-                                      child: CachedNetworkImage(
-                                        imageUrl: post.image!,
-                                        placeholder: (context, url) =>
-                                            const Center(
-                                                child:
-                                                    CircularProgressIndicator()),
-                                        errorWidget: (context, url, error) {
-                                          logger.e(
-                                              'Image load error: $url, $error');
-                                          return const Icon(Icons.error,
-                                              size: 50);
-                                        },
-                                        width: double.infinity,
-                                        height: 150,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(16),
+                                  child: InkWell(
+                                    onTap: () async {
+                                      await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              KomunitasDetailScreen(post: post),
+                                        ),
+                                      );
+                                      setState(() {});
+                                    },
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          post.username ?? 'Anonymous',
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 18,
-                                            color: Colors.blue,
+                                        if (post.image != null &&
+                                            post.image!.isNotEmpty)
+                                          ClipRRect(
+                                            borderRadius:
+                                                const BorderRadius.vertical(
+                                                    top: Radius.circular(12)),
+                                            child: CachedNetworkImage(
+                                              imageUrl: post.image!,
+                                              placeholder: (context, url) =>
+                                                  const Center(
+                                                      child:
+                                                          CircularProgressIndicator()),
+                                              errorWidget:
+                                                  (context, url, error) {
+                                                logger.e(
+                                                    'Image load error: $url, $error');
+                                                return const Icon(Icons.error,
+                                                    size: 50);
+                                              },
+                                              width: double.infinity,
+                                              height: 150,
+                                              fit: BoxFit.cover,
+                                            ),
                                           ),
-                                        ),
-                                        if (post.judul != null &&
-                                            post.judul!.isNotEmpty)
-                                          Padding(
-                                            padding:
-                                                const EdgeInsets.only(top: 15),
-                                            child: Text(
-                                              post.judul!,
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 17,
+                                        Padding(
+                                          padding: const EdgeInsets.all(16),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                post.username ?? 'Anonymous',
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 18,
+                                                  color: Colors.blue,
+                                                ),
                                               ),
-                                              maxLines: 1, 
-                                              overflow: TextOverflow
-                                                  .ellipsis, 
-                                            ),
+                                              if (post.judul != null &&
+                                                  post.judul!.isNotEmpty)
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          top: 15),
+                                                  child: Text(
+                                                    post.judul!,
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 17,
+                                                    ),
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                              const SizedBox(height: 20),
+                                              Text(
+                                                post.isi,
+                                                style: const TextStyle(
+                                                    fontSize: 14),
+                                                maxLines: 5,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ],
                                           ),
-                                        const SizedBox(height: 20),
-                                        Text(
-                                          post.isi,
-                                          style: const TextStyle(fontSize: 14),
-                                          maxLines: 5,
-                                          overflow: TextOverflow
-                                              .ellipsis, 
+                                        ),
+                                        const Divider(height: 10),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 20,
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              const SizedBox.shrink(),
+                                              Text(
+                                                '$totalKomentar Jawaban',
+                                                style: const TextStyle(
+                                                    color: Colors.blue,
+                                                    fontSize: 14,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ],
                                     ),
                                   ),
-                                  const Divider(height: 11),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 8,
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          '$totalKomentar Jawaban',
-                                          style: const TextStyle(
-                                            color: Colors.blue,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                        Row(
-                                          children: [
-                                            IconButton(
-                                              icon: const Icon(Icons.thumb_up),
-                                              onPressed: () {},
-                                              iconSize: 18,
-                                              color: Colors.grey,
-                                            ),
-                                            Text('${post.likeCount ?? 0}'),
-                                            const SizedBox(width: 8),
-                                            IconButton(
-                                              icon:
-                                                  const Icon(Icons.thumb_down),
-                                              onPressed: () {},
-                                              iconSize: 18,
-                                              color: Colors.grey,
-                                            ),
-                                            Text('${post.dislikeCount ?? 0}'),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
