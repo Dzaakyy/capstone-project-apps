@@ -1,19 +1,21 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:frontend/diagnosiscore.dart';
 import 'package:camera/camera.dart';
 import 'package:frontend/perawatanpage.dart';
+import 'dart:io';
 
 class DiagnosisPage extends StatefulWidget {
   final DiagnosisResult diagnosisResult;
   final List<CameraDescription> cameras;
   final bool showBackButton;
+  final bool fromHistory;
 
   const DiagnosisPage({
     super.key,
     required this.diagnosisResult,
     required this.cameras,
     this.showBackButton = false,
+    this.fromHistory = false
   });
 
   @override
@@ -29,6 +31,7 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
           diagnosisResult: widget.diagnosisResult,
           cameras: widget.cameras,
           recommendationText: widget.diagnosisResult.rekomendasiPerawatan,
+          fromHistory: widget.fromHistory,
         ),
       ),
     );
@@ -106,10 +109,27 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(10),
                   child: widget.diagnosisResult.imagePath.isNotEmpty
-                      ? Image.file(
-                          File(widget.diagnosisResult.imagePath),
-                          fit: BoxFit.cover,
-                        )
+                      ? widget.diagnosisResult.imagePath.startsWith('http')
+                          ? Image.network(
+                              widget.diagnosisResult.imagePath,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  color: Colors.grey.shade200,
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.image,
+                                      size: 50,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                );
+                              },
+                            )
+                          : Image.file(
+                              File(widget.diagnosisResult.imagePath),
+                              fit: BoxFit.cover,
+                            )
                       : Container(
                           color: Colors.grey.shade200,
                           child: const Center(
@@ -126,7 +146,7 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
               Row(
                 children: [
                   Icon(
-                    Icons.coronavirus_outlined,
+                    Icons.check,
                     size: 20,
                     color: Colors.grey.shade700,
                   ),
@@ -209,7 +229,7 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
                     elevation: 0,
                   ),
                   child: const Text(
-                    'Konfirmasi & lihat pengobatan',
+                    'Lihat pengobatan',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,

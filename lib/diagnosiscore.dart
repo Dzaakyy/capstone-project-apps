@@ -11,11 +11,12 @@ final logger = Logger();
 class DiagnosisResult {
   final String prediction;
   final double confidence;
-  final String imagePath;
+  final String imagePath; // Untuk lokal atau URL gambar dari backend
   final String namaPenyakit;
   final String gejala;
   final String rekomendasiPerawatan;
   final int idPrediksi;
+  final DateTime? tanggalDiagnosis;
 
   DiagnosisResult({
     required this.prediction,
@@ -25,21 +26,25 @@ class DiagnosisResult {
     required this.gejala,
     required this.rekomendasiPerawatan,
     required this.idPrediksi,
+    this.tanggalDiagnosis,
   });
 
-  factory DiagnosisResult.fromJson(Map<String, dynamic> json, String imagePath) {
+  factory DiagnosisResult.fromJson(
+      Map<String, dynamic> json, String imagePath) {
     return DiagnosisResult(
-      prediction: json['prediction']?.toString() ?? 'Unknown',
-      confidence: (json['confidence'] ?? 0.0).toDouble(),
-      imagePath: imagePath,
+      prediction: json['prediksi']?['prediksi'] ?? 'Unknown',
+      confidence: (json['prediksi']?['akurasi'] ?? 0.0).toDouble(),
+      imagePath: json['prediksi']?['imageUrl'] ?? imagePath,
       namaPenyakit: json['penyakit']?['nama_penyakit'] ?? 'Unknown',
       gejala: json['penyakit']?['gejala'] ?? 'Tidak ada informasi gejala',
       rekomendasiPerawatan:
           json['penyakit']?['rekomendasi_perawatan'] ?? 'Tidak ada rekomendasi',
       idPrediksi: json['prediksi']?['id_prediksi'] ?? 0,
+      tanggalDiagnosis: json['tanggal_diagnosis'] != null
+          ? DateTime.parse(json['tanggal_diagnosis'])
+          : null,
     );
   }
-
   Map<String, dynamic> toJson() {
     return {
       'prediction': prediction,
@@ -49,6 +54,7 @@ class DiagnosisResult {
       'gejala': gejala,
       'rekomendasiPerawatan': rekomendasiPerawatan,
       'idPrediksi': idPrediksi,
+      'tanggalDiagnosis': tanggalDiagnosis?.toIso8601String(),
       'timestamp': DateTime.now().toIso8601String(),
     };
   }
@@ -109,7 +115,10 @@ class DiagnosisService {
       logger.i('Image Path: ${diagnosisResult.imagePath}');
       logger.i('Timestamp: ${DateTime.now()}');
 
-      await Future.delayed(const Duration(milliseconds: 500));
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      List<String> diagnoses = prefs.getStringList('diagnoses') ?? [];
+      diagnoses.add(jsonEncode(diagnosisResult.toJson()));
+      await prefs.setStringList('diagnoses', diagnoses);
 
       return true;
     } catch (e) {
@@ -118,7 +127,7 @@ class DiagnosisService {
     }
   }
 
-  static Future<bool> saveDiagnosisToBackend(DiagnosisResult diagnosisResult) async {
+  static Future<List<DiagnosisResult>> fetchUserHistory() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('accessToken');
@@ -126,40 +135,34 @@ class DiagnosisService {
         throw Exception('Token tidak ditemukan. Silakan login kembali.');
       }
 
-      var request = http.MultipartRequest(
-        'POST',
-        Uri.parse('$_baseUrl/diagnosis/save'),
+      final response = await http.get(
+        Uri.parse('$_baseUrl/api/history'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
       );
 
-      request.headers['Authorization'] = 'Bearer $token';
-      request.fields['prediction'] = diagnosisResult.prediction;
-      request.fields['confidence'] = diagnosisResult.confidence.toString();
-      request.fields['id_prediksi'] = diagnosisResult.idPrediksi.toString();
-      request.fields['timestamp'] = DateTime.now().toIso8601String();
-
-      if (diagnosisResult.imagePath.isNotEmpty) {
-        var mimeType = mime.lookupMimeType(diagnosisResult.imagePath) ?? 'image/jpeg';
-        request.files.add(await http.MultipartFile.fromPath(
-          'image',
-          diagnosisResult.imagePath,
-          contentType: mimeType != 'unknown' ? MediaType.parse(mimeType) : null,
-        ));
-      }
-
-      var response = await request.send();
-      logger.i('Save Diagnosis Status Code: ${response.statusCode}');
-      var responseData = await response.stream.bytesToString();
-      logger.i('Save Diagnosis Response: $responseData');
+      logger.i('History Status Code: ${response.statusCode}');
+      logger.i('History Response: ${response.body}');
 
       if (response.statusCode == 200) {
-        return true;
+        final List<dynamic> jsonResponse = jsonDecode(response.body);
+        return jsonResponse.map((item) {
+          // Perhatikan penyesuaian nama field sesuai response API
+          final imagePath = item['prediksi']?['imageUrl'] ?? '';
+          logger.i('Processing history item: ${item['id_diagnosis']}');
+          return DiagnosisResult.fromJson(item, imagePath);
+        }).toList();
+      } else if (response.statusCode == 404) {
+        return []; // Tidak ada riwayat
       } else {
         throw Exception(
-            'Failed to save diagnosis (Status: ${response.statusCode}) - $responseData');
+            'Failed to fetch history (Status: ${response.statusCode}) - ${response.body}');
       }
     } catch (e) {
-      logger.e('Error saving diagnosis to backend: ${e.toString()}');
-      return false;
+      logger.e('Error fetching history: ${e.toString()}');
+      throw Exception('Error fetching history: ${e.toString()}');
     }
   }
 }

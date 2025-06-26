@@ -4,17 +4,22 @@ import 'package:frontend/diagnosiscore.dart';
 import 'package:camera/camera.dart';
 import 'package:frontend/home.dart';
 import 'package:frontend/diagnosispage.dart';
+import 'package:logger/logger.dart';
+
+final logger = Logger();
 
 class RekomendasiPerawatanPage extends StatefulWidget {
   final DiagnosisResult diagnosisResult;
   final List<CameraDescription> cameras;
   final String recommendationText;
+  final bool fromHistory;
 
   const RekomendasiPerawatanPage({
     super.key,
     required this.diagnosisResult,
     required this.cameras,
     this.recommendationText = '',
+    this.fromHistory = false,
   });
 
   @override
@@ -52,13 +57,19 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
   }
 
   Future<void> _saveDiagnosis() async {
+    if (widget.fromHistory) {
+      Navigator.pop(
+          context); 
+      return;
+    }
+
     setState(() {
       _isSaving = true;
     });
 
     try {
-      // Simpan diagnosis secara lokal (opsional, jika diperlukan)
-      bool saveSuccess = await DiagnosisService.saveDiagnosis(widget.diagnosisResult);
+      bool saveSuccess =
+          await DiagnosisService.saveDiagnosis(widget.diagnosisResult);
 
       if (saveSuccess) {
         if (mounted) {
@@ -69,23 +80,22 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
               behavior: SnackBarBehavior.floating,
             ),
           );
+        }
 
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (context) => HomeScreen(cameras: widget.cameras),
-            ),
-            (route) => false,
-          );
-        }
-      } else {
-        if (mounted) {
-          _showErrorSnackBar('Gagal menyimpan diagnosis. Silakan coba lagi.');
-        }
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomeScreen(cameras: widget.cameras),
+          ),
+          (route) => false,
+        );
+      } else if (mounted) {
+        _showMessage('Gagal menyimpan diagnosis. Silakan coba lagi.',
+            isError: true);
       }
     } catch (e) {
       if (mounted) {
-        _showErrorSnackBar('Error: ${e.toString()}');
+        _showMessage('Error: ${e.toString()}', isError: true);
       }
     } finally {
       if (mounted) {
@@ -96,11 +106,13 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
     }
   }
 
-  void _showErrorSnackBar(String message) {
+  void _showMessage(String message, {bool isError = false}) {
+    if (widget.fromHistory) return; 
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.red,
+        backgroundColor: isError ? Colors.red : Colors.green,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -126,6 +138,12 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
           ),
         ),
         centerTitle: true,
+        leading: widget.fromHistory
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () => Navigator.pop(context),
+              )
+            : null,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -133,6 +151,7 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Diagnosis Result Section
               Row(
                 children: [
                   Container(
@@ -184,6 +203,7 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
                   ),
                   child: Row(
                     children: [
+                      // Image Preview
                       Container(
                         width: 60,
                         height: 60,
@@ -194,10 +214,24 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(8),
                           child: widget.diagnosisResult.imagePath.isNotEmpty
-                              ? Image.file(
-                                  File(widget.diagnosisResult.imagePath),
-                                  fit: BoxFit.cover,
-                                )
+                              ? widget.diagnosisResult.imagePath
+                                      .startsWith('http')
+                                  ? Image.network(
+                                      widget.diagnosisResult.imagePath,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        return Icon(
+                                          Icons.image,
+                                          size: 30,
+                                          color: Colors.grey.shade500,
+                                        );
+                                      },
+                                    )
+                                  : Image.file(
+                                      File(widget.diagnosisResult.imagePath),
+                                      fit: BoxFit.cover,
+                                    )
                               : Icon(
                                   Icons.image,
                                   size: 30,
@@ -206,6 +240,7 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
                         ),
                       ),
                       const SizedBox(width: 16),
+                      // Diagnosis Info
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -220,7 +255,7 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Bakteri', // Ganti dengan data spesifik jika tersedia
+                              'Akurasi: ${(widget.diagnosisResult.confidence * 100).toStringAsFixed(1)}%',
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey.shade600,
@@ -229,16 +264,14 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
                           ],
                         ),
                       ),
-                      Icon(
-                        Icons.arrow_forward_ios,
-                        size: 16,
-                        color: Colors.grey.shade600,
-                      ),
+                      const Icon(Icons.chevron_right),
                     ],
                   ),
                 ),
               ),
               const SizedBox(height: 32),
+
+              // Treatment Recommendation Section
               Row(
                 children: [
                   Container(
@@ -275,50 +308,53 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
                 textAlign: TextAlign.justify,
               ),
               const SizedBox(height: 40),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isSaving ? null : _saveDiagnosis,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue.shade600,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+
+              // Confirm Button (only show for new diagnoses)
+              if (!widget.fromHistory)
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isSaving ? null : _saveDiagnosis,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue.shade600,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      elevation: 0,
                     ),
-                    elevation: 0,
-                  ),
-                  child: _isSaving
-                      ? const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
+                    child: _isSaving
+                        ? const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
                               ),
-                            ),
-                            SizedBox(width: 12),
-                            Text(
-                              'Menyimpan...',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
+                              SizedBox(width: 12),
+                              Text(
+                                'Menyimpan...',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
+                            ],
+                          )
+                        : const Text(
+                            'Konfirmasi',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
                             ),
-                          ],
-                        )
-                      : const Text(
-                          'Simpan ke diagnosis anda',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
                           ),
-                        ),
+                  ),
                 ),
-              ),
               const SizedBox(height: 20),
             ],
           ),

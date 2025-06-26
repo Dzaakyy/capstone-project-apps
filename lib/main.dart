@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/splashscreen.dart';
 import 'package:camera/camera.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('id_ID', null);
   final cameras = await availableCameras();
   runApp(MyApp(cameras: cameras));
 }
