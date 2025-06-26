@@ -20,8 +20,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState(){
     super.initState();
     widgetList = [
-      HomePage(cameras: widget.cameras), // Pass cameras to HomePage
-      KomunitasScreen(),
+      HomePage(cameras: widget.cameras), 
+      const KomunitasScreen(),
       ProfileScreen(cameras: widget.cameras)
     ];
   }
