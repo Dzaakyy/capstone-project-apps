@@ -290,7 +290,6 @@ class _HomePageState extends State<HomePage> {
                                           fromHistory: true),
                                     ),
                                   ).then((_) {
-                                    // Refresh history after returning from diagnosis page
                                     _refreshHistory();
                                   });
                                 },
@@ -299,7 +298,6 @@ class _HomePageState extends State<HomePage> {
                                       const EdgeInsets.symmetric(vertical: 12),
                                   child: Row(
                                     children: [
-                                      // Gambar Diagnosis
                                       Container(
                                         width: 80,
                                         height: 80,
@@ -349,7 +347,6 @@ class _HomePageState extends State<HomePage> {
                                         ),
                                       ),
                                       const SizedBox(width: 16),
-                                      // Detail Diagnosis
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment:

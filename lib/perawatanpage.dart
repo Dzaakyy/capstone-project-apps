@@ -58,8 +58,7 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
 
   Future<void> _saveDiagnosis() async {
     if (widget.fromHistory) {
-      Navigator.pop(
-          context); 
+      Navigator.pop(context);
       return;
     }
 
@@ -107,7 +106,7 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
   }
 
   void _showMessage(String message, {bool isError = false}) {
-    if (widget.fromHistory) return; 
+    if (widget.fromHistory) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -151,7 +150,6 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Diagnosis Result Section
               Row(
                 children: [
                   Container(
@@ -203,7 +201,6 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
                   ),
                   child: Row(
                     children: [
-                      // Image Preview
                       Container(
                         width: 60,
                         height: 60,
@@ -240,7 +237,6 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
                         ),
                       ),
                       const SizedBox(width: 16),
-                      // Diagnosis Info
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -271,7 +267,6 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
               ),
               const SizedBox(height: 32),
 
-              // Treatment Recommendation Section
               Row(
                 children: [
                   Container(
@@ -309,7 +304,6 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
               ),
               const SizedBox(height: 40),
 
-              // Confirm Button (only show for new diagnoses)
               if (!widget.fromHistory)
                 SizedBox(
                   width: double.infinity,

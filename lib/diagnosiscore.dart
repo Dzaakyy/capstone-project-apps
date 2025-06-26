@@ -11,7 +11,7 @@ final logger = Logger();
 class DiagnosisResult {
   final String prediction;
   final double confidence;
-  final String imagePath; // Untuk lokal atau URL gambar dari backend
+  final String imagePath; 
   final String namaPenyakit;
   final String gejala;
   final String rekomendasiPerawatan;
@@ -149,13 +149,12 @@ class DiagnosisService {
       if (response.statusCode == 200) {
         final List<dynamic> jsonResponse = jsonDecode(response.body);
         return jsonResponse.map((item) {
-          // Perhatikan penyesuaian nama field sesuai response API
           final imagePath = item['prediksi']?['imageUrl'] ?? '';
           logger.i('Processing history item: ${item['id_diagnosis']}');
           return DiagnosisResult.fromJson(item, imagePath);
         }).toList();
       } else if (response.statusCode == 404) {
-        return []; // Tidak ada riwayat
+        return []; 
       } else {
         throw Exception(
             'Failed to fetch history (Status: ${response.statusCode}) - ${response.body}');

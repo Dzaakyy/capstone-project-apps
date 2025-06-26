@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend/home.dart';
 import 'package:camera/camera.dart';
+import 'package:frontend/registerpage.dart';
 
 class SignInPage extends StatefulWidget {
   final List<CameraDescription> cameras;
@@ -43,7 +44,6 @@ class _SignInPageState extends State<SignInPage> {
             response.headers['set-cookie']?.split('accessToken=')[1].split(';')[0] ??
                 '');
 
-        // Decode JWT untuk mendapatkan data pengguna
         final token = prefs.getString('accessToken');
         final parts = token?.split('.');
         if (parts != null && parts.length == 3) {
@@ -55,7 +55,6 @@ class _SignInPageState extends State<SignInPage> {
           await prefs.setString('roleName', payload['roleName']);
         }
 
-        // Tampilkan pesan sukses jika widget masih mounted
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -69,13 +68,12 @@ class _SignInPageState extends State<SignInPage> {
           );
         }
 
-        // Navigasi ke HomeScreen jika widget masih mounted
         if (mounted) {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
               builder: (context) => HomeScreen(
-                cameras: widget.cameras, // Hanya teruskan cameras
+                cameras: widget.cameras, 
               ),
             ),
           );
@@ -228,9 +226,40 @@ class _SignInPageState extends State<SignInPage> {
                                   }
                                   login();
                                 },
+                                style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue.shade300,
+                                foregroundColor: Colors.white,
+                              ),
                                 child: const Text(
                                   'Sign In',
-                                  style: TextStyle(color: Colors.blue),
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                              ),
+                            ),
+                           const SizedBox(height: 20.0),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => 
+                                        SignUpPage(cameras: widget.cameras),
+                                  ),
+                                );
+                              },
+                              child: RichText(
+                                text: TextSpan(
+                                  text: 'Belum punya akun? ',
+                                  style: const TextStyle(color: Colors.black),
+                                  children: [
+                                    TextSpan(
+                                      text: 'Daftar disini',
+                                      style: TextStyle(
+                                        color: Colors.blue.shade300,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
