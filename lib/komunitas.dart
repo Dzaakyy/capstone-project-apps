@@ -56,7 +56,8 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
         final List<dynamic> data = json.decode(response.body);
         if (mounted) {
           setState(() {
-            komunitasList = data.map((json) => Komunitas.fromJson(json)).toList();
+            komunitasList =
+                data.map((json) => Komunitas.fromJson(json)).toList();
             isLoading = false;
           });
           logger.i('Fetched ${komunitasList.length} posts');
@@ -72,7 +73,8 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Gagal memuat data: ${response.statusCode}')),
+            SnackBar(
+                content: Text('Gagal memuat data: ${response.statusCode}')),
           );
         }
         setState(() => isLoading = false);
@@ -122,8 +124,7 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
-            onPressed: () {
-            },
+            onPressed: () {},
             color: Colors.black,
           ),
         ],
@@ -171,7 +172,8 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  if (post.image != null && post.image!.isNotEmpty)
+                                  if (post.image != null &&
+                                      post.image!.isNotEmpty)
                                     ClipRRect(
                                       borderRadius: const BorderRadius.vertical(
                                           top: Radius.circular(12)),
@@ -182,7 +184,8 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
                                                 child:
                                                     CircularProgressIndicator()),
                                         errorWidget: (context, url, error) {
-                                          logger.e('Image load error: $url, $error');
+                                          logger.e(
+                                              'Image load error: $url, $error');
                                           return const Icon(Icons.error,
                                               size: 50);
                                         },
@@ -201,7 +204,8 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
                                           post.username ?? 'Anonymous',
                                           style: const TextStyle(
                                             fontWeight: FontWeight.bold,
-                                            fontSize: 20,
+                                            fontSize: 18,
+                                            color: Colors.blue,
                                           ),
                                         ),
                                         if (post.judul != null &&
@@ -215,12 +219,18 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 17,
                                               ),
+                                              maxLines: 1, 
+                                              overflow: TextOverflow
+                                                  .ellipsis, 
                                             ),
                                           ),
-                                        const SizedBox(height: 11),
+                                        const SizedBox(height: 20),
                                         Text(
                                           post.isi,
                                           style: const TextStyle(fontSize: 14),
+                                          maxLines: 5,
+                                          overflow: TextOverflow
+                                              .ellipsis, 
                                         ),
                                       ],
                                     ),
@@ -246,17 +256,16 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
                                           children: [
                                             IconButton(
                                               icon: const Icon(Icons.thumb_up),
-                                              onPressed: () {
-                                              },
+                                              onPressed: () {},
                                               iconSize: 18,
                                               color: Colors.grey,
                                             ),
                                             Text('${post.likeCount ?? 0}'),
                                             const SizedBox(width: 8),
                                             IconButton(
-                                              icon: const Icon(Icons.thumb_down),
-                                              onPressed: () {
-                                              },
+                                              icon:
+                                                  const Icon(Icons.thumb_down),
+                                              onPressed: () {},
                                               iconSize: 18,
                                               color: Colors.grey,
                                             ),
@@ -279,8 +288,7 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(
-                builder: (context) => const TanyaKomunitasPage()),
+            MaterialPageRoute(builder: (context) => const TanyaKomunitasPage()),
           ).then((_) => fetchKomunitas());
         },
         backgroundColor: Colors.blue,

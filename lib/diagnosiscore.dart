@@ -17,6 +17,8 @@ class DiagnosisResult {
   final String rekomendasiPerawatan;
   final int idPrediksi;
   final DateTime? tanggalDiagnosis;
+  final String? error; 
+  final String? message;
 
   DiagnosisResult({
     required this.prediction,
@@ -27,6 +29,8 @@ class DiagnosisResult {
     required this.rekomendasiPerawatan,
     required this.idPrediksi,
     this.tanggalDiagnosis,
+    this.error,
+    this.message
   });
 
   factory DiagnosisResult.fromJson(
@@ -43,6 +47,8 @@ class DiagnosisResult {
       tanggalDiagnosis: json['tanggal_diagnosis'] != null
           ? DateTime.parse(json['tanggal_diagnosis'])
           : null,
+          error: json['error'], 
+      message: json['message'], 
     );
   }
   Map<String, dynamic> toJson() {
@@ -55,6 +61,8 @@ class DiagnosisResult {
       'rekomendasiPerawatan': rekomendasiPerawatan,
       'idPrediksi': idPrediksi,
       'tanggalDiagnosis': tanggalDiagnosis?.toIso8601String(),
+      'error': error,
+      'message': message,
       'timestamp': DateTime.now().toIso8601String(),
     };
   }
