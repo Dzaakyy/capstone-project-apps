@@ -6,7 +6,6 @@ class Komunitas {
   final String isi;
   final String? image;
   final DateTime? tanggalPost;
-  final int? jawabanCount;
   final int? likeCount;
   final int? dislikeCount;
 
@@ -18,7 +17,6 @@ class Komunitas {
     required this.isi,
     this.image,
     this.tanggalPost,
-    this.jawabanCount = 0,
     this.likeCount = 0,
     this.dislikeCount = 0,
   });
@@ -31,10 +29,9 @@ class Komunitas {
       judul: json['judul'],
       isi: json['isi'],
       image: json['image'],
-      tanggalPost: json['tanggal_post'] != null 
+      tanggalPost: json['tanggal_post'] != null
           ? DateTime.parse(json['tanggal_post'])
           : null,
-      jawabanCount: json['jawaban_count'] ?? 0,
       likeCount: json['like_count'] ?? 0,
       dislikeCount: json['dislike_count'] ?? 0,
     );

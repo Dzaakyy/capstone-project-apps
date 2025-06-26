@@ -18,7 +18,7 @@ class TanyaKomunitasPage extends StatefulWidget {
 class _TanyaKomunitasPageState extends State<TanyaKomunitasPage> {
   final _questionController = TextEditingController();
   final _descriptionController = TextEditingController();
-  XFile? _pickedFile; // Menggunakan XFile seperti di CameraPage
+  XFile? _pickedFile; 
   bool _isLoading = false;
   final logger = Logger();
 
@@ -86,7 +86,6 @@ class _TanyaKomunitasPageState extends State<TanyaKomunitasPage> {
     request.fields['judul'] = _questionController.text;
     request.fields['isi'] = _descriptionController.text;
 
-    // Tambahkan penanganan MIME type seperti di DiagnosisService
     var mimeType = mime.lookupMimeType(_pickedFile!.path) ?? 'image/jpeg';
     logger.i('Mengirim file: ${_pickedFile!.path}, MIME Type: $mimeType');
 
@@ -94,7 +93,7 @@ class _TanyaKomunitasPageState extends State<TanyaKomunitasPage> {
       'image',
       _pickedFile!.path,
       contentType: mimeType != 'unknown' ? MediaType.parse(mimeType) : null,
-      filename: _pickedFile!.name, // Opsional, tergantung kebutuhan server
+      filename: _pickedFile!.name, 
     );
     request.files.add(file);
 
@@ -267,7 +266,7 @@ class _TanyaKomunitasPageState extends State<TanyaKomunitasPage> {
                       backgroundColor: Colors.blue,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(50),
                       ),
                     ),
                     child: _isLoading
