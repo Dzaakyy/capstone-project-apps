@@ -68,7 +68,7 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
                   .map((json) => Komunitas.fromJson(json))
                   .toList();
             } else {
-              userPosts = []; // Jika format tidak sesuai, kosongkan
+              userPosts = []; 
             }
             isLoading = false;
           });
@@ -121,7 +121,9 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
             userPosts.removeWhere((post) => post.idKomunitas == postId);
           });
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Postingan berhasil dihapus')),
+            const SnackBar(content: Text('Postingan berhasil dihapus'),
+            backgroundColor: Colors.green,),
+            
           );
         }
       } else {
@@ -330,7 +332,7 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
                                                                 .idKomunitas!);
                                                           },
                                                           child: const Text(
-                                                              'Hapus'),
+                                                              'Hapus', style: TextStyle(color: Colors.red),), 
                                                         ),
                                                       ],
                                                     ),

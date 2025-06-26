@@ -48,14 +48,16 @@ class _TanyaKomunitasPageState extends State<TanyaKomunitasPage> {
   Future<void> _submitQuestion() async {
   if (_questionController.text.isEmpty) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Silakan masukkan pertanyaan Anda')),
+      const SnackBar(content: Text('Silakan masukkan pertanyaan Anda'),
+      backgroundColor: Colors.red,),
     );
     return;
   }
 
   if (_pickedFile == null) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Silakan pilih gambar terlebih dahulu')),
+      const SnackBar(content: Text('Silakan pilih gambar terlebih dahulu'),
+      backgroundColor: Colors.red,),
     );
     return;
   }

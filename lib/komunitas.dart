@@ -8,7 +8,7 @@ import 'dart:async';
 import 'komunitascore.dart';
 import 'tanyakomunitas.dart';
 import 'komunitasdetailscreen.dart';
-import 'userpostscreen.dart'; // Perbaiki nama file menjadi 'userpostsscreen.dart'
+import 'userpostscreen.dart';
 
 final logger = Logger();
 
@@ -60,9 +60,6 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
         Uri.parse('http://10.0.2.2:3000/api/komunitas'),
         headers: {'Authorization': 'Bearer $token'},
       );
-
-      logger.i('Fetch Komunitas Status: ${response.statusCode}');
-      logger.i('Fetch Komunitas Response: ${response.body}');
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
@@ -244,11 +241,7 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
                     ),
                   ),
                   const SizedBox(width: 10),
-                  IconButton(
-                    icon: const Icon(Icons.notifications_none),
-                    color: Colors.black,
-                    onPressed: () {},
-                  ),
+                
                   IconButton(
                     icon: const Icon(Icons.list_rounded),
                     color: Colors.black,
@@ -258,7 +251,7 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
                         MaterialPageRoute(builder: (context) => const UserPostsScreen()),
                       ).then((_) async {
                         if (mounted) {
-                          await fetchKomunitas(); // Perbarui data secara otomatis saat kembali
+                          await fetchKomunitas(); 
                         }
                       });
                     },
@@ -323,7 +316,7 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
                                         ),
                                       ).then((_) async {
                                         if (mounted) {
-                                          await fetchKomunitas(); // Perbarui data setelah kembali dari detail
+                                          await fetchKomunitas(); 
                                         }
                                       });
                                     },
@@ -417,7 +410,7 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
             MaterialPageRoute(builder: (context) => const TanyaKomunitasPage()),
           ).then((_) async {
             if (mounted) {
-              await fetchKomunitas(); // Perbarui data setelah menambah postingan
+              await fetchKomunitas(); 
             }
           });
         },
