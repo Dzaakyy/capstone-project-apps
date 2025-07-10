@@ -18,8 +18,26 @@ class SignInPage extends StatefulWidget {
 class _SignInPageState extends State<SignInPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  
+  // Menambahkan state untuk loading
+  bool _isLoading = false;
 
   Future<void> login() async {
+    // Validasi input kosong di awal
+    if (_usernameController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Username dan password tidak boleh kosong"),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+    
+    setState(() {
+      _isLoading = true; // Mulai loading
+    });
+
     String urlLogin = "http://10.0.2.2:3000/api/user/login";
     try {
       var response = await http.post(
@@ -37,63 +55,64 @@ class _SignInPageState extends State<SignInPage> {
 
       var dataLogin = jsonDecode(response.body);
       if (response.statusCode == 200 && dataLogin['msg'] == 'Login Berhasil') {
-        // Simpan token ke SharedPreferences
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString(
-            'accessToken',
-            response.headers['set-cookie']?.split('accessToken=')[1].split(';')[0] ??
-                '');
+        
+        // Ekstrak token dari header cookie
+        final rawCookie = response.headers['set-cookie'];
+        String token = '';
+        if (rawCookie != null) {
+          int index = rawCookie.indexOf('accessToken=');
+          if (index != -1) {
+            token = rawCookie.substring(index + 'accessToken='.length).split(';')[0];
+          }
+        }
+        await prefs.setString('accessToken', token);
 
-        final token = prefs.getString('accessToken');
-        final parts = token?.split('.');
-        if (parts != null && parts.length == 3) {
+        // Decode token untuk mendapatkan role
+        final parts = token.split('.');
+        if (parts.length == 3) {
           final payload = jsonDecode(
             utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
           );
+          
+          final String roleName = payload['roleName'] ?? '';
+          
+          // --- PENGECEKAN ROLE DIMULAI DI SINI ---
+          // Gunakan .toLowerCase() agar tidak terpengaruh huruf besar/kecil (misal: 'Petani' atau 'petani')
+          if (roleName.toLowerCase() != 'petani') { 
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("Akses ditolak. Halaman ini khusus untuk petani."),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+            // Hentikan proses jika bukan petani
+            setState(() { _isLoading = false; });
+            return; 
+          }
+          // --- AKHIR PENGECEKAN ROLE ---
+
+          // Simpan data jika role sesuai
           await prefs.setInt('idUser', payload['userId']);
           await prefs.setString('namaUser', payload['username']);
-          await prefs.setString('roleName', payload['roleName']);
-        }
+          await prefs.setString('roleName', roleName);
 
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text("Login Berhasil!"),
-              backgroundColor: Colors.green,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          );
-        }
-
-        if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => HomeScreen(
-                cameras: widget.cameras, 
-              ),
-            ),
-          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Login Berhasil!"), backgroundColor: Colors.green),
+            );
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => HomeScreen(cameras: widget.cameras)),
+            );
+          }
+        } else {
+           throw Exception('Format token tidak valid');
         }
       } else {
-        if (kDebugMode) {
-          print("Login gagal: ${dataLogin['msg']}");
-        }
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Login Gagal: ${dataLogin['msg']}"),
-              backgroundColor: Colors.red,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          );
-        }
+        throw Exception(dataLogin['msg'] ?? 'Login Gagal');
       }
     } catch (exc) {
       if (kDebugMode) {
@@ -101,11 +120,17 @@ class _SignInPageState extends State<SignInPage> {
       }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Terjadi kesalahan. Coba lagi nanti."),
+          SnackBar(
+            content: Text("Terjadi kesalahan: ${exc.toString().replaceFirst("Exception: ", "")}"),
             backgroundColor: Colors.red,
           ),
         );
+      }
+    } finally {
+      if(mounted) {
+        setState(() {
+          _isLoading = false; // Selesai loading
+        });
       }
     }
   }
@@ -117,7 +142,7 @@ class _SignInPageState extends State<SignInPage> {
       body: Stack(
         children: [
           Image.asset(
-            './lib/assets/signin.png',
+            './lib/assets/signin.png', // Pastikan path asset benar
             fit: BoxFit.cover,
             width: double.infinity,
             height: double.infinity,
@@ -125,10 +150,7 @@ class _SignInPageState extends State<SignInPage> {
           SafeArea(
             child: Column(
               children: [
-                const Expanded(
-                  flex: 1,
-                  child: SizedBox(height: 10),
-                ),
+                const Expanded(flex: 1, child: SizedBox(height: 10)),
                 Expanded(
                   flex: 2,
                   child: Container(
@@ -156,95 +178,41 @@ class _SignInPageState extends State<SignInPage> {
                             const SizedBox(height: 40.0),
                             TextFormField(
                               controller: _usernameController,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter Username';
-                                }
-                                return null;
-                              },
                               decoration: InputDecoration(
                                 label: const Text('Username'),
-                                hintText: 'Enter Username',
-                                hintStyle: const TextStyle(color: Colors.black26),
-                                border: OutlineInputBorder(
-                                  borderSide:
-                                      const BorderSide(color: Colors.black12),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderSide:
-                                      const BorderSide(color: Colors.black12),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                               ),
                             ),
                             const SizedBox(height: 25.0),
                             TextFormField(
                               controller: _passwordController,
                               obscureText: true,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter Password';
-                                }
-                                return null;
-                              },
                               decoration: InputDecoration(
                                 label: const Text('Password'),
-                                hintText: 'Enter Password',
-                                hintStyle: const TextStyle(color: Colors.black26),
-                                border: OutlineInputBorder(
-                                  borderSide:
-                                      const BorderSide(color: Colors.black12),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderSide:
-                                      const BorderSide(color: Colors.black12),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                               ),
                             ),
                             const SizedBox(height: 25.0),
                             SizedBox(
                               width: double.infinity,
+                              height: 50,
                               child: ElevatedButton(
-                                onPressed: () {
-                                  if (_usernameController.text.isEmpty ||
-                                      _passwordController.text.isEmpty) {
-                                    if (kDebugMode) {
-                                      print(
-                                          "Username dan password tidak boleh kosong");
-                                    }
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                            "Username dan password tidak boleh kosong"),
-                                        backgroundColor: Colors.red,
-                                      ),
-                                    );
-                                    return;
-                                  }
-                                  login();
-                                },
+                                onPressed: _isLoading ? null : login, // Nonaktifkan tombol saat loading
                                 style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue.shade300,
-                                foregroundColor: Colors.white,
-                              ),
-                                child: const Text(
-                                  'Sign In',
-                                  style: TextStyle(fontSize: 16),
+                                  backgroundColor: Colors.blue.shade300,
+                                  foregroundColor: Colors.white,
                                 ),
+                                child: _isLoading
+                                  ? const CircularProgressIndicator(color: Colors.white)
+                                  : const Text('Sign In', style: TextStyle(fontSize: 16)),
                               ),
                             ),
-                           const SizedBox(height: 20.0),
+                            const SizedBox(height: 20.0),
                             TextButton(
                               onPressed: () {
-                                Navigator.pushReplacement(
+                                Navigator.push(
                                   context,
-                                  MaterialPageRoute(
-                                    builder: (context) => 
-                                        SignUpPage(cameras: widget.cameras),
-                                  ),
+                                  MaterialPageRoute(builder: (context) => SignUpPage(cameras: widget.cameras)),
                                 );
                               },
                               child: RichText(
