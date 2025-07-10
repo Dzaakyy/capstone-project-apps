@@ -5,6 +5,7 @@ import 'package:frontend/diagnosiscore.dart';
 import 'package:frontend/diagnosispage.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
+import 'package:frontend/historypage.dart';
 
 final logger = Logger();
 
@@ -22,12 +23,12 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _historyFuture = DiagnosisService.fetchUserHistory();
+    _historyFuture = DiagnosisService.fetchUserHistory(limit: 5);
   }
 
   void _refreshHistory() {
     setState(() {
-      _historyFuture = DiagnosisService.fetchUserHistory();
+      _historyFuture = DiagnosisService.fetchUserHistory(limit: 5);
     });
   }
 
@@ -187,18 +188,30 @@ class _HomePageState extends State<HomePage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
                         const Text(
-                          'Diagnosis Anda',
+                          'Diagnosis Terbaru',
                           style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.w500),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                         GestureDetector(
-                          onTap: _refreshHistory,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      HistoryPage(cameras: widget.cameras)),
+                            ).then((_) {
+                              _refreshHistory();
+                            });
+                          },
                           child: Text(
                             'Lihat Semua',
                             style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.blue.shade700),
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.blue.shade700,
+                            ),
                           ),
                         ),
                       ],
@@ -224,9 +237,8 @@ class _HomePageState extends State<HomePage> {
                                 Text(
                                   'Gagal memuat riwayat',
                                   style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.grey.shade700,
-                                  ),
+                                      fontSize: 16,
+                                      color: Colors.grey.shade700),
                                 ),
                                 Text(
                                   snapshot.error.toString(),
@@ -284,10 +296,11 @@ class _HomePageState extends State<HomePage> {
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => DiagnosisPage(
-                                          diagnosisResult: history,
-                                          cameras: widget.cameras,
-                                          showBackButton: true,
-                                          fromHistory: true),
+                                        diagnosisResult: history,
+                                        cameras: widget.cameras,
+                                        showBackButton: true,
+                                        fromHistory: true,
+                                      ),
                                     ),
                                   ).then((_) {
                                     _refreshHistory();
@@ -315,8 +328,9 @@ class _HomePageState extends State<HomePage> {
                                                   fit: BoxFit.cover,
                                                   loadingBuilder: (context,
                                                       child, progress) {
-                                                    if (progress == null)
+                                                    if (progress == null) {
                                                       return child;
+                                                    }
                                                     return Center(
                                                       child:
                                                           CircularProgressIndicator(
@@ -384,7 +398,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ],
               ),
-            ),
+            )
           ],
         ),
       ),

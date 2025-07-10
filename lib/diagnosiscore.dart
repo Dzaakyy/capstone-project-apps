@@ -135,7 +135,7 @@ class DiagnosisService {
     }
   }
 
-  static Future<List<DiagnosisResult>> fetchUserHistory() async {
+ static Future<List<DiagnosisResult>> fetchUserHistory({int? limit}) async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('accessToken');
@@ -143,8 +143,14 @@ class DiagnosisService {
         throw Exception('Token tidak ditemukan. Silakan login kembali.');
       }
 
+      // Bangun URL dengan parameter limit jika ada
+      String url = '$_baseUrl/api/history';
+      if (limit != null) {
+        url += '?limit=$limit';
+      }
+
       final response = await http.get(
-        Uri.parse('$_baseUrl/api/history'),
+        Uri.parse(url),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
