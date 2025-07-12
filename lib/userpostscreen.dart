@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'komunitascore.dart';
 import 'komunitasdetailscreen.dart';
+import 'editpostscreen.dart';
 
 final logger = Logger();
 
@@ -68,7 +69,7 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
                   .map((json) => Komunitas.fromJson(json))
                   .toList();
             } else {
-              userPosts = []; 
+              userPosts = [];
             }
             isLoading = false;
           });
@@ -121,9 +122,10 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
             userPosts.removeWhere((post) => post.idKomunitas == postId);
           });
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Postingan berhasil dihapus'),
-            backgroundColor: Colors.green,),
-            
+            const SnackBar(
+              content: Text('Postingan berhasil dihapus'),
+              backgroundColor: Colors.green,
+            ),
           );
         }
       } else {
@@ -304,40 +306,71 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceBetween,
                                             children: [
-                                              IconButton(
-                                                icon: const Icon(Icons.delete,
-                                                    color: Colors.red),
-                                                onPressed: () {
-                                                  showDialog(
-                                                    context: context,
-                                                    builder: (context) =>
-                                                        AlertDialog(
-                                                      title: const Text(
-                                                          'Konfirmasi'),
-                                                      content: const Text(
-                                                          'Apakah Anda yakin ingin menghapus postingan ini?'),
-                                                      actions: [
-                                                        TextButton(
-                                                          onPressed: () =>
-                                                              Navigator.pop(
-                                                                  context),
-                                                          child: const Text(
-                                                              'Batal'),
+                                              Row(
+                                                children: [
+                                                  IconButton(
+                                                    icon: const Icon(Icons.edit,
+                                                        color: Colors.blue),
+                                                    onPressed: () async {
+                                                      final bool?
+                                                          postWasUpdated =
+                                                          await Navigator.push<
+                                                              bool>(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              EditPostScreen(
+                                                                  post: post),
                                                         ),
-                                                        TextButton(
-                                                          onPressed: () {
-                                                            Navigator.pop(
-                                                                context);
-                                                            deletePost(post
-                                                                .idKomunitas!);
-                                                          },
-                                                          child: const Text(
-                                                              'Hapus', style: TextStyle(color: Colors.red),), 
+                                                      );
+
+                                                      if (postWasUpdated ==
+                                                          true) {
+                                                        fetchUserPosts();
+                                                      }
+                                                    },
+                                                  ),
+                                                  IconButton(
+                                                    icon: const Icon(
+                                                        Icons.delete,
+                                                        color: Colors.red),
+                                                    onPressed: () {
+                                                      showDialog(
+                                                        context: context,
+                                                        builder: (context) =>
+                                                            AlertDialog(
+                                                          title: const Text(
+                                                              'Konfirmasi'),
+                                                          content: const Text(
+                                                              'Apakah Anda yakin ingin menghapus postingan ini?'),
+                                                          actions: [
+                                                            TextButton(
+                                                              onPressed: () =>
+                                                                  Navigator.pop(
+                                                                      context),
+                                                              child: const Text(
+                                                                  'Batal'),
+                                                            ),
+                                                            TextButton(
+                                                              onPressed: () {
+                                                                Navigator.pop(
+                                                                    context);
+                                                                deletePost(post
+                                                                    .idKomunitas!);
+                                                              },
+                                                              child: const Text(
+                                                                'Hapus',
+                                                                style: TextStyle(
+                                                                    color: Colors
+                                                                        .red),
+                                                              ),
+                                                            ),
+                                                          ],
                                                         ),
-                                                      ],
-                                                    ),
-                                                  );
-                                                },
+                                                      );
+                                                    },
+                                                  ),
+                                                ],
                                               ),
                                               Text(
                                                 '$totalKomentar Jawaban',
