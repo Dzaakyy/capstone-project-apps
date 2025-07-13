@@ -128,9 +128,9 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: Text(
-          _currentDate,
-          style: const TextStyle(
+        title:const Text(
+          "Rekomendasi Perawatan",
+          style: TextStyle(
             fontSize: 18,
             color: Colors.black,
             fontWeight: FontWeight.w500,
@@ -251,7 +251,7 @@ class _RekomendasiPerawatanPageState extends State<RekomendasiPerawatanPage> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Akurasi: ${(widget.diagnosisResult.confidence * 100).toStringAsFixed(1)}%',
+                              widget.diagnosisResult.golongan,
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey.shade600,

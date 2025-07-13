@@ -13,6 +13,8 @@ class DiagnosisResult {
   final double confidence;
   final String imagePath; 
   final String namaPenyakit;
+  final String golongan;
+  final String namaIlmiah;
   final String gejala;
   final String rekomendasiPerawatan;
   final int idPrediksi;
@@ -25,6 +27,8 @@ class DiagnosisResult {
     required this.confidence,
     required this.imagePath,
     required this.namaPenyakit,
+    required this.golongan,
+    required this.namaIlmiah,
     required this.gejala,
     required this.rekomendasiPerawatan,
     required this.idPrediksi,
@@ -40,6 +44,8 @@ class DiagnosisResult {
       confidence: (json['prediksi']?['akurasi'] ?? 0.0).toDouble(),
       imagePath: json['prediksi']?['imageUrl'] ?? imagePath,
       namaPenyakit: json['penyakit']?['nama_penyakit'] ?? 'Unknown',
+      golongan: json['penyakit']?['golongan'] ?? 'Unknown',
+      namaIlmiah: json['penyakit']?['nama_ilmiah'] ?? 'Unknown',
       gejala: json['penyakit']?['gejala'] ?? 'Tidak ada informasi gejala',
       rekomendasiPerawatan:
           json['penyakit']?['rekomendasi_perawatan'] ?? 'Tidak ada rekomendasi',
@@ -57,6 +63,8 @@ class DiagnosisResult {
       'confidence': confidence,
       'imagePath': imagePath,
       'namaPenyakit': namaPenyakit,
+      'golongan': golongan,
+      'namaIlmiah': namaIlmiah,
       'gejala': gejala,
       'rekomendasiPerawatan': rekomendasiPerawatan,
       'idPrediksi': idPrediksi,

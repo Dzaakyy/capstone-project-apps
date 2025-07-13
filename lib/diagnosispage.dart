@@ -87,7 +87,7 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  'Akurasi: ${(widget.diagnosisResult.confidence * 100).toStringAsFixed(1)}%',
+                  widget.diagnosisResult.golongan,
                   style: TextStyle(
                     color: Colors.blue.shade700,
                     fontSize: 12,
@@ -207,7 +207,7 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
                   border: Border.all(color: Colors.grey.shade200),
                 ),
                 child: Text(
-                  widget.diagnosisResult.namaPenyakit,
+                  'Nama Ilmiah : ${(widget.diagnosisResult.namaIlmiah)}',
                   style: TextStyle(
                     color: Colors.grey.shade600,
                     fontSize: 14,
