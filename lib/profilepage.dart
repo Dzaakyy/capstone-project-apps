@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:frontend/signinpage.dart'; // Sesuaikan dengan path halaman login Anda
+import 'package:frontend/signinpage.dart'; 
 import 'package:camera/camera.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -15,19 +15,23 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  // State untuk data profil
   String? nama;
   String? username;
   String? role;
   bool isLoading = true;
   String? errorMessage;
 
-  // State untuk mode edit dan controller
   bool _isEditing = false;
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _namaController;
   late TextEditingController _usernameController;
   late TextEditingController _passwordController;
+
+  String? originalNama;
+  String? originalUsername;
+  String? originalPassword = '';
+
+  bool _hasChanges = false;
 
   @override
   void initState() {
@@ -71,9 +75,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             nama = data['user']['nama'];
             username = data['user']['username'];
             role = data['user']['role']?['nama'] ?? 'Tidak ada role';
+            originalNama = nama;
+            originalUsername = username;
             _namaController.text = nama!;
             _usernameController.text = username!;
             isLoading = false;
+            _checkForChanges(); 
           });
         } else {
           throw Exception('Gagal memuat profil: Status ${response.statusCode}');
@@ -90,7 +97,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _updateProfile() async {
-    if (!_formKey.currentState!.validate()) {
+    if (!_formKey.currentState!.validate() || !_hasChanges) {
+      return;
+    }
+
+    if (_passwordController.text.isNotEmpty && _passwordController.text.length < 5) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Panjang password minimal 5 karakter"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
       return;
     }
 
@@ -127,8 +146,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           setState(() {
             nama = data['user']['nama'];
             username = data['user']['username'];
+            originalNama = nama;
+            originalUsername = username;
             _isEditing = false;
             isLoading = false;
+            _hasChanges = false; 
           });
           _passwordController.clear();
           ScaffoldMessenger.of(context).showSnackBar(
@@ -184,6 +206,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  void _checkForChanges() {
+    setState(() {
+      _hasChanges = _namaController.text != originalNama ||
+          _usernameController.text != originalUsername ||
+          _passwordController.text.isNotEmpty;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -234,15 +264,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold)),
                     ),
-                    Positioned(
-                      top: 40,
-                      right: 10,
-                      child: IconButton(
-                        onPressed: _logout,
-                        icon: const Icon(Icons.logout, color: Colors.white),
-                        tooltip: 'Logout',
+                    if (!_isEditing) 
+                      Positioned(
+                        top: 40,
+                        right: 10,
+                        child: IconButton(
+                          onPressed: _logout,
+                          icon: const Icon(Icons.logout, color: Colors.white),
+                          tooltip: 'Logout',
+                        ),
                       ),
-                    ),
                     Padding(
                       padding: const EdgeInsets.only(top: 120.0),
                       child: ListView(
@@ -319,6 +350,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildEditView() {
+    _checkForChanges();
+
     return Card(
       color: Colors.white,
       elevation: 4,
@@ -347,6 +380,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 validator: (value) => value == null || value.isEmpty
                     ? 'Nama tidak boleh kosong'
                     : null,
+                onChanged: (_) => _checkForChanges(),
               ),
               const SizedBox(height: 20),
               TextFormField(
@@ -360,18 +394,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 validator: (value) => value == null || value.isEmpty
                     ? 'Username tidak boleh kosong'
                     : null,
+                onChanged: (_) => _checkForChanges(),
               ),
               const SizedBox(height: 20),
               TextFormField(
                 controller: _passwordController,
                 decoration: InputDecoration(
                   labelText: 'Password Baru (Opsional)',
-                  hintText: 'Isi untuk mengganti password',
+                  hintText: 'Isi untuk mengganti password (min 5 karakter)',
                   prefixIcon: const Icon(Icons.lock_outline),
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12)),
                 ),
                 obscureText: true,
+                onChanged: (_) => _checkForChanges(),
               ),
               const SizedBox(height: 32),
               Row(
@@ -384,9 +420,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               borderRadius: BorderRadius.circular(30))),
                       onPressed: () => setState(() {
                         _isEditing = false;
-                        _namaController.text = nama!;
-                        _usernameController.text = username!;
+                        _namaController.text = originalNama!;
+                        _usernameController.text = originalUsername!;
                         _passwordController.clear();
+                        _hasChanges = false;
                       }),
                       child: const Text('Batal',
                           style: TextStyle(color: Colors.black)),
@@ -399,9 +436,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30)),
-                        backgroundColor: Colors.blue,
+                        backgroundColor: _hasChanges ? Colors.blue : Colors.grey,
                       ),
-                      onPressed: _updateProfile,
+                      onPressed: _hasChanges ? _updateProfile : null,
                       child: const Text('Simpan',
                           style: TextStyle(color: Colors.white)),
                     ),

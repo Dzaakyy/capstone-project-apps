@@ -122,7 +122,7 @@ class _KomunitasDetailScreenState extends State<KomunitasDetailScreen> {
     if (_commentController.text.trim().isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Silakan masukkan komentar Anda')),
+          const SnackBar(content: Text('Silakan masukkan komentar Anda'), backgroundColor: Colors.red),
         );
       }
       return;
@@ -189,7 +189,7 @@ class _KomunitasDetailScreenState extends State<KomunitasDetailScreen> {
     if (newText.trim().isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Silakan masukkan komentar Anda')),
+          const SnackBar(content: Text('Silakan masukkan komentar Anda'), backgroundColor: Colors.red ),
         );
       }
       return;

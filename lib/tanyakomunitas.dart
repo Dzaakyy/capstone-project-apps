@@ -18,7 +18,7 @@ class TanyaKomunitasPage extends StatefulWidget {
 class _TanyaKomunitasPageState extends State<TanyaKomunitasPage> {
   final _questionController = TextEditingController();
   final _descriptionController = TextEditingController();
-  XFile? _pickedFile; 
+  XFile? _pickedFile;
   bool _isLoading = false;
   final logger = Logger();
 
@@ -46,110 +46,143 @@ class _TanyaKomunitasPageState extends State<TanyaKomunitasPage> {
   }
 
   Future<void> _submitQuestion() async {
-  if (_questionController.text.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Silakan masukkan pertanyaan Anda'),
-      backgroundColor: Colors.red,),
-    );
-    return;
-  }
-
-  if (_pickedFile == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Silakan pilih gambar terlebih dahulu'),
-      backgroundColor: Colors.red,),
-    );
-    return;
-  }
-
-  setState(() {
-    _isLoading = true;
-  });
-
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('accessToken');
-
-    if (token == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Anda perlu login terlebih dahulu')),
-        );
-      }
+    if (_questionController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Silakan masukkan pertanyaan Anda'), backgroundColor: Colors.red),
+      );
       return;
     }
 
-    var request = http.MultipartRequest(
-      'POST',
-      Uri.parse('http://10.0.2.2:3000/api/komunitas'),
-    );
+    if (_descriptionController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Silakan masukkan deskripsi masalah'), backgroundColor: Colors.red),
+      );
+      return;
+    }
 
-    request.headers['Authorization'] = 'Bearer $token';
-    request.fields['judul'] = _questionController.text;
-    request.fields['isi'] = _descriptionController.text;
+    if (_pickedFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Silakan pilih gambar terlebih dahulu'), backgroundColor: Colors.red),
+      );
+      return;
+    }
 
-    var mimeType = mime.lookupMimeType(_pickedFile!.path) ?? 'image/jpeg';
-    logger.i('Mengirim file: ${_pickedFile!.path}, MIME Type: $mimeType');
+    setState(() {
+      _isLoading = true;
+    });
 
-    var file = await http.MultipartFile.fromPath(
-      'image',
-      _pickedFile!.path,
-      contentType: mimeType != 'unknown' ? MediaType.parse(mimeType) : null,
-      filename: _pickedFile!.name, 
-    );
-    request.files.add(file);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('accessToken');
 
-    var response = await request.send();
-    var responseData = await response.stream.bytesToString();
-    logger.i('Status Code: ${response.statusCode}, Response: $responseData');
-
-    if (response.statusCode == 201) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Pertanyaan berhasil dikirim ke komunitas'),
-            backgroundColor: Colors.green,
-          ),
-        );
-
-        _questionController.clear();
-        _descriptionController.clear();
-        setState(() {
-          _pickedFile = null;
-        });
-
-        Navigator.pop(context);
+      if (token == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Anda perlu login terlebih dahulu')),
+          );
+        }
+        return;
       }
-    } else {
-      var errorMessage = json.decode(responseData)['error'] ?? 'Unknown error';
-      logger.e('Error: $errorMessage');
+
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('http://10.0.2.2:3000/api/komunitas'),
+      );
+
+      request.headers['Authorization'] = 'Bearer $token';
+      request.fields['judul'] = _questionController.text;
+      request.fields['isi'] = _descriptionController.text;
+
+      var mimeType = mime.lookupMimeType(_pickedFile!.path) ?? 'image/jpeg';
+      logger.i('Mengirim file: ${_pickedFile!.path}, MIME Type: $mimeType');
+
+      var file = await http.MultipartFile.fromPath(
+        'image',
+        _pickedFile!.path,
+        contentType: mimeType != 'unknown' ? MediaType.parse(mimeType) : null,
+        filename: _pickedFile!.name,
+      );
+      request.files.add(file);
+
+      var response = await request.send();
+      var responseData = await response.stream.bytesToString();
+      logger.i('Status Code: ${response.statusCode}, Response: $responseData');
+
+      if (response.statusCode == 201) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Pertanyaan berhasil dikirim ke komunitas'),
+              backgroundColor: Colors.green,
+            ),
+          );
+
+          _questionController.clear();
+          _descriptionController.clear();
+          setState(() {
+            _pickedFile = null;
+          });
+
+          Navigator.pop(context);
+        }
+      } else {
+        try {
+          Map<String, dynamic> errorResponse = json.decode(responseData);
+          String errorMessage = 'Gagal mengirim pertanyaan. Silakan coba lagi.';
+          if (errorResponse.containsKey('errors') && errorResponse['errors'] is List) {
+            errorMessage = errorResponse['errors']
+                .map((e) => e['msg'] as String)
+                .join(', ');
+          } else if (errorResponse.containsKey('error')) {
+            errorMessage = errorResponse['error'];
+          } else if (errorResponse.containsKey('message')) {
+            errorMessage = errorResponse['message'];
+          }
+          logger.e('Error: $errorMessage (Status: ${response.statusCode})');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Gagal: $errorMessage'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        } catch (parseError) {
+          logger.e('Error parsing response: $parseError');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Gagal memproses respons server'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      logger.e('Error during upload: ${e.toString()}');
+      String errorMessage = 'Terjadi kesalahan: ${e.toString()}';
+      if (e is http.ClientException) {
+        errorMessage = 'Koneksi bermasalah. Periksa jaringan Anda.';
+      } else if (e is FormatException) {
+        errorMessage = 'Data respons tidak valid dari server.';
+      }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Gagal mengirim pertanyaan: $errorMessage'),
+            content: Text(errorMessage),
             backgroundColor: Colors.red,
           ),
         );
       }
-    }
-  } catch (e) {
-    logger.e('Error during upload: ${e.toString()}');
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Terjadi kesalahan: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  } finally {
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
-}
 
   @override
   Widget build(BuildContext context) {

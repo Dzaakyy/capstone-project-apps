@@ -202,7 +202,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             obscureText: true,
                             decoration: InputDecoration(
                               label: const Text('Password'),
-                              hintText: 'Masukkan password',
+                              hintText: 'Masukkan password (min 5 karakter)',
                               hintStyle: const TextStyle(color: Colors.black26),
                               border: OutlineInputBorder(
                                 borderSide:
@@ -222,7 +222,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             obscureText: true,
                             decoration: InputDecoration(
                               label: const Text('Konfirmasi Password'),
-                              hintText: 'Masukkan password kembali',
+                              hintText: 'Masukkan password kembali (min 5 karakter)',
                               hintStyle: const TextStyle(color: Colors.black26),
                               border: OutlineInputBorder(
                                 borderSide:
@@ -251,6 +251,17 @@ class _SignUpPageState extends State<SignUpPage> {
                                           const SnackBar(
                                             content: Text(
                                                 "Semua field harus diisi"),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                        return;
+                                      }
+                                      // Validasi panjang password minimal 5 karakter
+                                      if (_passwordController.text.length < 5) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                                "Panjang password minimal 5 karakter"),
                                             backgroundColor: Colors.red,
                                           ),
                                         );

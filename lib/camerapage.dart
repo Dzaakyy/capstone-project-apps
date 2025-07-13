@@ -237,8 +237,8 @@ void _showErrorSnackBar(String message) {
                 ),
                 const SizedBox(height: 15),
                 Text(
-                  message.contains('Penyakit tidak ditemukan di database')
-                      ? 'Maaf, penyakit pada daun ini tidak ditemukan dalam database. Silakan coba dengan gambar lain atau tanyakan ke komunitas.'
+                  message.contains('Penyakit tidak ditemukan')
+                      ? 'Maaf, penyakit pada daun ini tidak ditemukan. Silakan coba dengan gambar lain atau tanyakan ke komunitas.'
                       : message,
                   style: const TextStyle(fontSize: 16, color: Colors.black87),
                 ),
