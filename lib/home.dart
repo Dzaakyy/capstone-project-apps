@@ -13,15 +13,15 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int myIndex = 0;
+  int myIndex = 1;
   late List<Widget> widgetList;
 
   @override
   void initState(){
     super.initState();
     widgetList = [
-      HomePage(cameras: widget.cameras), 
       const KomunitasScreen(),
+      HomePage(cameras: widget.cameras), 
       ProfileScreen(cameras: widget.cameras)
     ];
   }
@@ -44,8 +44,8 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         currentIndex: myIndex,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.image_search), label: 'Cek Kesehatan'),
           BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Komunitas'),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home Page'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'user'),
         ],
       ),
