@@ -64,7 +64,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
 
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:3000/api/profile'),
+        Uri.parse('http://192.168.0.105:3000/api/profile'),
         headers: {'Authorization': 'Bearer $token'},
       );
 
@@ -132,7 +132,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
 
       final response = await http.put(
-        Uri.parse('http://10.0.2.2:3000/api/profile'),
+        Uri.parse('http://192.168.0.105:3000/api/profile'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -184,7 +184,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       await prefs.clear();
       await http.delete(
-        Uri.parse('http://10.0.2.2:3000/api/user/logout'),
+        Uri.parse('http://192.168.0.105:3000/api/user/logout'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',

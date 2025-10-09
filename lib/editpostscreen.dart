@@ -85,7 +85,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
       var request = http.MultipartRequest(
         'PUT', // Gunakan metode PUT untuk update
         Uri.parse(
-            'http://10.0.2.2:3000/api/komunitas/${widget.post.idKomunitas}'),
+            'http://192.168.0.105:3000/api/komunitas/${widget.post.idKomunitas}'),
       );
 
       request.headers['Authorization'] = 'Bearer $token';

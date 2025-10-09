@@ -38,7 +38,7 @@ class _SignUpPageState extends State<SignUpPage> {
       _isLoading = true;
     });
 
-    String urlRegister = "http://10.0.2.2:3000/api/user/register";
+    String urlRegister = "http://192.168.0.105:3000/api/user/register";
     try {
       var response = await http.post(
         Uri.parse(urlRegister),

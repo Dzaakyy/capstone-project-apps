@@ -86,7 +86,7 @@ class _TanyaKomunitasPageState extends State<TanyaKomunitasPage> {
 
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://10.0.2.2:3000/api/komunitas'),
+        Uri.parse('http://192.168.0.105:3000/api/komunitas'),
       );
 
       request.headers['Authorization'] = 'Bearer $token';

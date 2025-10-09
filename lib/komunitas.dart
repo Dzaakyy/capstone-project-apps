@@ -57,7 +57,7 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
       }
 
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:3000/api/komunitas'),
+        Uri.parse('http://192.168.0.105:3000/api/komunitas'),
         headers: {'Authorization': 'Bearer $token'},
       );
 
@@ -121,7 +121,7 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
       }
 
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:3000/api/komunitas/cari?query=$query'),
+        Uri.parse('http://192.168.0.105:3000/api/komunitas/cari?query=$query'),
         headers: {'Authorization': 'Bearer $token'},
       );
 
@@ -169,7 +169,7 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
       if (token == null) return 0;
 
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:3000/api/komunitas/$postId/komentar'),
+        Uri.parse('http://192.168.0.105:3000/api/komunitas/$postId/komentar'),
         headers: {'Authorization': 'Bearer $token'},
       );
 

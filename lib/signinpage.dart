@@ -38,7 +38,7 @@ class _SignInPageState extends State<SignInPage> {
       _isLoading = true; // Mulai loading
     });
 
-    String urlLogin = "http://10.0.2.2:3000/api/user/login";
+    String urlLogin = "http://192.168.0.105:3000/api/user/login";
     try {
       var response = await http.post(
         Uri.parse(urlLogin),

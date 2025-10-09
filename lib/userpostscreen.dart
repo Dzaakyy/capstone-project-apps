@@ -51,7 +51,7 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
       }
 
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:3000/api/postingan/user'),
+        Uri.parse('http://192.168.0.105:3000/api/postingan/user'),
         headers: {'Authorization': 'Bearer $token'},
       );
 
@@ -112,7 +112,7 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
       }
 
       final response = await http.delete(
-        Uri.parse('http://10.0.2.2:3000/api/komunitas/$postId'),
+        Uri.parse('http://192.168.0.105:3000/api/komunitas/$postId'),
         headers: {'Authorization': 'Bearer $token'},
       );
 
@@ -155,7 +155,7 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
       if (token == null) return 0;
 
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:3000/api/komunitas/$postId/komentar'),
+        Uri.parse('http://192.168.0.105:3000/api/komunitas/$postId/komentar'),
         headers: {'Authorization': 'Bearer $token'},
       );
 

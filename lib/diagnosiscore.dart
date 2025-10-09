@@ -77,7 +77,7 @@ class DiagnosisResult {
 }
 
 class DiagnosisService {
-  static const String _baseUrl = 'http://10.0.2.2:3000';
+  static const String _baseUrl = 'http://192.168.0.105:3000';
 
   static Future<DiagnosisResult> performDiagnosis(File imageFile) async {
     try {

@@ -84,7 +84,7 @@ class _KomunitasDetailScreenState extends State<KomunitasDetailScreen> {
 
       final response = await http.get(
         Uri.parse(
-            'http://10.0.2.2:3000/api/komunitas/${widget.post.idKomunitas}/komentar'),
+            'http://192.168.0.105:3000/api/komunitas/${widget.post.idKomunitas}/komentar'),
         headers: {'Authorization': 'Bearer $token'},
       );
 
@@ -144,7 +144,7 @@ class _KomunitasDetailScreenState extends State<KomunitasDetailScreen> {
 
       final response = await http.post(
         Uri.parse(
-            'http://10.0.2.2:3000/api/komunitas/${widget.post.idKomunitas}/komentar'),
+            'http://192.168.0.105:3000/api/komunitas/${widget.post.idKomunitas}/komentar'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -210,7 +210,7 @@ class _KomunitasDetailScreenState extends State<KomunitasDetailScreen> {
       }
 
       final response = await http.put(
-        Uri.parse('http://10.0.2.2:3000/api/komunitas/komentar/$komentarId'),
+        Uri.parse('http://192.168.0.105:3000/api/komunitas/komentar/$komentarId'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -278,7 +278,7 @@ class _KomunitasDetailScreenState extends State<KomunitasDetailScreen> {
                 }
 
                 final response = await http.delete(
-                  Uri.parse('http://10.0.2.2:3000/api/komunitas/komentar/$komentarId'),
+                  Uri.parse('http://192.168.0.105:3000/api/komunitas/komentar/$komentarId'),
                   headers: {'Authorization': 'Bearer $token'},
                 );
 
