@@ -28,111 +28,227 @@ class _HistoryPageState extends State<HistoryPage> {
 
   String _formatDate(DateTime? date) {
     if (date == null) return 'Tanggal tidak tersedia';
-    return DateFormat('dd MMMM yyyy, HH:mm', 'id_ID').format(date);
+    return DateFormat('dd MMM yyyy, HH:mm').format(date);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF7F9FC),
       appBar: AppBar(
-        title: const Text('Semua Riwayat Diagnosis'),
-        backgroundColor: Colors.blue.shade400,
-        foregroundColor: Colors.white,
+        title: const Text(
+          'Diagnosis History',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
+            color: Color(0xFF1A1F2C),
+          ),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: Color(0xFF1A1F2C)),
       ),
       body: RefreshIndicator(
+        color: const Color(0xFF22C55E),
         onRefresh: () async => _refreshAllHistory(),
         child: BlocBuilder<DiagnosisBloc, DiagnosisState>(
           builder: (context, state) {
             if (state is HistoryLoading || state is DiagnosisInitial) {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(
+                child: CircularProgressIndicator(color: Color(0xFF22C55E)),
+              );
             } else if (state is HistoryError) {
               return Center(
-                  child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text('Error: ${state.message}',
-                    textAlign: TextAlign.center),
-              ));
-            } else if (state is HistoryLoaded) {
-              final histories = state.histories;
-              if (histories.isEmpty) {
-                return const Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.history_toggle_off,
-                          size: 60, color: Colors.grey),
-                      SizedBox(height: 16),
-                      Text('Tidak ada riwayat diagnosis.',
-                          style: TextStyle(fontSize: 16, color: Colors.grey)),
+                      Icon(Icons.error_outline_rounded, size: 64, color: Colors.red.shade400),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Oops! Something went wrong',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey.shade800),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        state.message,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.grey.shade600),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            } else if (state is HistoryLoaded) {
+              final histories = state.histories;
+              if (histories.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 20,
+                              offset: const Offset(0, 10),
+                            )
+                          ]
+                        ),
+                        child: const Icon(Icons.history_rounded, size: 64, color: Colors.grey),
+                      ),
+                      const SizedBox(height: 24),
+                      const Text(
+                        'No history yet',
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1A1F2C)),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Your diagnosis results will appear here.',
+                        style: TextStyle(fontSize: 15, color: Colors.grey.shade600),
+                      ),
                     ],
                   ),
                 );
               }
 
-              return ListView.separated(
-                padding: const EdgeInsets.all(16.0),
+              return ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 itemCount: histories.length,
-                separatorBuilder: (context, index) => const Divider(
-                  thickness: 1, 
-                  height: 1, 
-                ),
                 itemBuilder: (context, index) {
                   final history = histories[index];
-                  return InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => DiagnosisPage(
-                              diagnosisResult: history,
-                              cameras: widget.cameras,
-                              showBackButton: true,
-                              fromHistory: true),
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.03),
+                          blurRadius: 15,
+                          offset: const Offset(0, 5),
                         ),
-                      ).then((_) => _refreshAllHistory());
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12.0),
-                      child: Row(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8.0),
-                            child: Image.network(
-                              history.imagePath,
-                              width: 80,
-                              height: 80,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Container(
-                                width: 80,
-                                height: 80,
-                                color: Colors.grey.shade200,
-                                child: const Icon(Icons.broken_image,
-                                    color: Colors.grey),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(20),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(20),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DiagnosisPage(
+                                  diagnosisResult: history,
+                                  cameras: widget.cameras,
+                                  showBackButton: true,
+                                  fromHistory: true),
+                            ),
+                          ).then((_) => _refreshAllHistory());
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Row(
+                            children: [
+                              Hero(
+                                tag: 'history_image_${history.idPrediksi}',
+                                child: Container(
+                                  width: 90,
+                                  height: 90,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(16),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: Image.network(
+                                      history.imagePath,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) => Container(
+                                        color: Colors.grey.shade100,
+                                        child: Icon(Icons.broken_image_rounded, color: Colors.grey.shade400, size: 32),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _formatDate(history.tanggalDiagnosis),
-                                  style: TextStyle(
-                                      fontSize: 12, color: Colors.grey.shade600),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.blue.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        _formatDate(history.tanggalDiagnosis),
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.blue.shade700,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Text(
+                                      history.namaPenyakit,
+                                      style: const TextStyle(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF1A1F2C),
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        Icon(Icons.category_rounded, size: 14, color: Colors.grey.shade500),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          history.golongan,
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: Colors.grey.shade600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  history.namaPenyakit,
-                                  style: const TextStyle(
-                                      fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF7F9FC),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                              ],
-                            ),
+                                child: const Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  color: Color(0xFF1A1F2C),
+                                  size: 16,
+                                ),
+                              ),
+                            ],
                           ),
-                          const Icon(Icons.chevron_right, color: Colors.grey),
-                        ],
+                        ),
                       ),
                     ),
                   );

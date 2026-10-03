@@ -2,15 +2,16 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 
 import 'package:frontend/features/community/presentation/bloc/community_bloc.dart';
 import 'package:frontend/features/community/presentation/bloc/community_event.dart';
 import 'package:frontend/features/community/presentation/bloc/community_state.dart';
-
 import 'package:frontend/features/community/presentation/pages/ask_community_screen.dart';
 import 'package:frontend/features/community/presentation/pages/community_detail_screen.dart';
 import 'package:frontend/features/community/presentation/pages/user_post_screen.dart';
+import 'package:frontend/core/utils/snackbar_util.dart';
 
 final logger = Logger();
 
@@ -50,6 +51,18 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
     BlocProvider.of<CommunityBloc>(context).add(PostsSearchRequested(query));
   }
 
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final diff = now.difference(date);
+    if (diff.inDays == 0) {
+      if (diff.inHours == 0) return '${diff.inMinutes} menit lalu';
+      return '${diff.inHours} jam lalu';
+    } else if (diff.inDays < 7) {
+      return '${diff.inDays} hari lalu';
+    }
+    return DateFormat('dd MMM yyyy', 'id_ID').format(date);
+  }
+
   void _onSearchChanged(String query) {
     if (_searchDebounce?.isActive ?? false) _searchDebounce?.cancel();
 
@@ -61,17 +74,18 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey.shade100,
       extendBodyBehindAppBar: false,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(80.0),
         child: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: Colors.white,
             boxShadow: [
               BoxShadow(
-                color: Colors.black12,
-                blurRadius: 2,
-                offset: Offset(0, 1),
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               )
             ],
           ),
@@ -86,19 +100,19 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(25.0),
-                        border: Border.all(color: Colors.black, width: 1.0),
+                        color: Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(16.0),
                       ),
                       child: TextField(
                         controller: _searchController,
                         decoration: InputDecoration(
                           hintText: 'Cari Keluhan Tanaman',
+                          hintStyle: TextStyle(color: Colors.grey.shade400, fontWeight: FontWeight.w500),
                           border: InputBorder.none,
-                          prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                          prefixIcon: Icon(Icons.search_rounded, color: Colors.grey.shade500),
                           suffixIcon: _searchController.text.isNotEmpty
                               ? IconButton(
-                                  icon: const Icon(Icons.clear, color: Colors.grey),
+                                  icon: Icon(Icons.clear_rounded, color: Colors.grey.shade500),
                                   onPressed: () {
                                     _searchController.clear();
                                     _onSearchChanged('');
@@ -106,29 +120,41 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
                                 )
                               : null,
                           contentPadding: const EdgeInsets.symmetric(
-                            vertical: 10.0,
-                            horizontal: 15.0,
+                            vertical: 14.0,
+                            horizontal: 16.0,
                           ),
                         ),
                         onChanged: _onSearchChanged,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
-                
-                  IconButton(
-                    icon: const Icon(Icons.list_rounded),
-                    color: Colors.black,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const UserPostsScreen()),
-                      ).then((_) {
-                        if (mounted) {
-                          _fetchKomunitas(); 
-                        }
-                      });
-                    },
+                  const SizedBox(width: 12),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        )
+                      ],
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.person_outline_rounded),
+                      color: Colors.blue.shade700,
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const UserPostsScreen()),
+                        ).then((_) {
+                          if (mounted) {
+                            _fetchKomunitas(); 
+                          }
+                        });
+                      },
+                    ),
                   ),
                 ],
               ),
@@ -140,18 +166,26 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
       body: BlocBuilder<CommunityBloc, CommunityState>(
         builder: (context, state) {
           if (state is CommunityLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator(color: Colors.blue));
           } else if (state is CommunityError) {
-            return Center(child: Text(state.message));
+            return Center(child: Text(state.message, style: TextStyle(color: Colors.grey.shade600)));
           } else if (state is PostsLoaded) {
             final komunitasList = state.posts;
 
             if (komunitasList.isEmpty) {
               return Center(
-                child: Text(
-                  _searchController.text.isNotEmpty
-                      ? 'Tidak ditemukan hasil pencarian'
-                      : 'Tidak ada postingan',
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.search_off_rounded, size: 64, color: Colors.grey.shade300),
+                    const SizedBox(height: 16),
+                    Text(
+                      _searchController.text.isNotEmpty
+                          ? 'Tidak ditemukan hasil pencarian'
+                          : 'Belum ada postingan',
+                      style: TextStyle(color: Colors.grey.shade500, fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                  ],
                 ),
               );
             }
@@ -165,117 +199,168 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
                 }
               },
               child: ListView.builder(
-                padding: const EdgeInsets.all(16),
+                // Padding bawah ekstra agar item terakhir tidak tertutup FAB + floating nav
+                padding: const EdgeInsets.only(left: 16, right: 16, top: 20, bottom: 160),
                 itemCount: komunitasList.length,
                 itemBuilder: (context, index) {
                   final post = komunitasList[index];
-                  // Removed FutureBuilder for comments, default to 0. 
-                  // In a real application, total comments might be included in the Komunitas model from the backend.
-                  final int totalKomentar = 0; 
                   
                   return Container(
-                    margin: const EdgeInsets.only(bottom: 16),
+                    margin: const EdgeInsets.only(bottom: 20),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
-                          spreadRadius: 1,
-                          blurRadius: 5,
-                          offset: const Offset(0, 2),
+                          color: Colors.black.withOpacity(0.04),
+                          spreadRadius: 0,
+                          blurRadius: 16,
+                          offset: const Offset(0, 4),
                         )
                       ],
                     ),
-                    child: InkWell(
-                      onTap: () async {
-                        await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => KomunitasDetailScreen(post: post),
-                          ),
-                        ).then((_) {
-                          if (mounted) {
-                            if (_searchController.text.isEmpty) {
-                                _fetchKomunitas(); 
-                            } else {
-                                _searchKomunitas(_searchController.text);
-                            }
-                          }
-                        });
-                      },
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (post.image != null && post.image!.isNotEmpty)
-                            ClipRRect(
-                              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                              child: CachedNetworkImage(
-                                imageUrl: post.image!,
-                                placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-                                errorWidget: (context, url, error) {
-                                  logger.e('Image load error: $url, $error');
-                                  return const Icon(Icons.error, size: 50);
-                                },
-                                width: double.infinity,
-                                height: 150,
-                                fit: BoxFit.cover,
-                              ),
+                    child: Material(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(20),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(20),
+                        onTap: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => KomunitasDetailScreen(post: post),
                             ),
-                          Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  post.username ?? 'Anonymous',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
-                                    color: Colors.blue,
+                          ).then((_) {
+                            if (mounted) {
+                              if (_searchController.text.isEmpty) {
+                                  _fetchKomunitas(); 
+                              } else {
+                                  _searchKomunitas(_searchController.text);
+                              }
+                            }
+                          });
+                        },
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (post.image != null && post.image!.isNotEmpty)
+                              ClipRRect(
+                                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                                child: CachedNetworkImage(
+                                  imageUrl: post.image!,
+                                  placeholder: (context, url) => Container(
+                                    height: 160,
+                                    color: Colors.grey.shade50,
+                                    child: const Center(child: CircularProgressIndicator()),
                                   ),
+                                  errorWidget: (context, url, error) {
+                                    logger.e('Image load error: $url, $error');
+                                    return Container(
+                                      height: 160,
+                                      color: Colors.grey.shade50,
+                                      child: Icon(Icons.broken_image_rounded, size: 40, color: Colors.grey.shade400),
+                                    );
+                                  },
+                                  width: double.infinity,
+                                  height: 160,
+                                  fit: BoxFit.cover,
                                 ),
-                                if (post.judul != null && post.judul!.isNotEmpty)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 15),
-                                    child: Text(
+                              ),
+                            Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 18,
+                                        backgroundColor: Colors.blue.shade50,
+                                        child: Text(
+                                          (post.username ?? 'A')[0].toUpperCase(),
+                                          style: TextStyle(
+                                            color: Colors.blue.shade700,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              post.username ?? 'Anonymous',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 15,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                            Text(
+                                              post.tanggalPost != null
+                                                  ? _formatDate(post.tanggalPost!)
+                                                  : 'Baru saja',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey.shade500,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  if (post.judul != null && post.judul!.isNotEmpty)
+                                    Text(
                                       post.judul!,
                                       style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 17,
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 18,
+                                        color: Colors.black87,
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    post.isi,
+                                    style: TextStyle(fontSize: 14, color: Colors.grey.shade700, height: 1.5),
+                                    maxLines: 3,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                const SizedBox(height: 20),
-                                Text(
-                                  post.isi,
-                                  style: const TextStyle(fontSize: 14),
-                                  maxLines: 5,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                          const Divider(height: 10),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const SizedBox.shrink(),
-                                Text(
-                                  '$totalKomentar Jawaban',
-                                  style: const TextStyle(
-                                      color: Colors.blue,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ],
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                              decoration: BoxDecoration(
+                                border: Border(top: BorderSide(color: Colors.grey.shade100)),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(Icons.chat_bubble_outline_rounded, size: 18, color: Colors.blue.shade600),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        '${post.commentCount} Jawaban',
+                                        style: TextStyle(
+                                          color: Colors.blue.shade700,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   );
@@ -287,25 +372,7 @@ class _KomunitasScreenState extends State<KomunitasScreen> {
           return const SizedBox.shrink();
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const TanyaKomunitasPage()),
-          ).then((_) {
-            if (mounted) {
-              if (_searchController.text.isEmpty) {
-                  _fetchKomunitas(); 
-              } else {
-                  _searchKomunitas(_searchController.text);
-              }
-            }
-          });
-        },
-        backgroundColor: Colors.blue,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
     );
   }
 }
+

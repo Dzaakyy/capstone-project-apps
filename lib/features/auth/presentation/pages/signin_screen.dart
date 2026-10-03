@@ -6,6 +6,7 @@ import 'package:frontend/features/auth/presentation/pages/register_screen.dart';
 import 'package:frontend/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:frontend/features/auth/presentation/bloc/auth_event.dart';
 import 'package:frontend/features/auth/presentation/bloc/auth_state.dart';
+import 'package:frontend/core/utils/snackbar_util.dart';
 
 class SignInPage extends StatefulWidget {
   final List<CameraDescription> cameras;
@@ -18,15 +19,11 @@ class SignInPage extends StatefulWidget {
 class _SignInPageState extends State<SignInPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _isPasswordVisible = false;
 
   void _onLoginPressed() {
     if (_usernameController.text.isEmpty || _passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Username dan password tidak boleh kosong"),
-          backgroundColor: Colors.orange,
-        ),
-      );
+      SnackbarUtil.showWarning(context, "Username dan password tidak boleh kosong");
       return;
     }
     context.read<AuthBloc>().add(
@@ -60,6 +57,13 @@ class _SignInPageState extends State<SignInPage> {
                         topLeft: Radius.circular(40.0),
                         topRight: Radius.circular(40.0),
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 20,
+                          offset: Offset(0, -5),
+                        )
+                      ],
                     ),
                     child: SingleChildScrollView(
                       child: Form(
@@ -69,41 +73,87 @@ class _SignInPageState extends State<SignInPage> {
                             Text(
                               'Selamat Datang',
                               style: TextStyle(
-                                fontSize: 30.0,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.blue.shade300,
+                                fontSize: 28.0,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.blue.shade700,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 8.0),
+                            Text(
+                              'Silakan masuk ke akun Anda',
+                              style: TextStyle(
+                                fontSize: 14.0,
+                                color: Colors.grey.shade600,
                               ),
                             ),
                             const SizedBox(height: 40.0),
                             TextFormField(
                               controller: _usernameController,
+                              style: const TextStyle(fontSize: 16),
                               decoration: InputDecoration(
-                                label: const Text('Username'),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                labelText: 'Username',
+                                prefixIcon: Icon(Icons.person_outline, color: Colors.blue.shade400),
+                                filled: true,
+                                fillColor: Colors.grey.shade50,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide.none,
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide(color: Colors.grey.shade200),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide(color: Colors.blue.shade300, width: 2),
+                                ),
                               ),
                             ),
-                            const SizedBox(height: 25.0),
+                            const SizedBox(height: 20.0),
                             TextFormField(
                               controller: _passwordController,
-                              obscureText: true,
+                              obscureText: !_isPasswordVisible,
+                              style: const TextStyle(fontSize: 16),
                               decoration: InputDecoration(
-                                label: const Text('Password'),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                labelText: 'Password',
+                                prefixIcon: Icon(Icons.lock_outline, color: Colors.blue.shade400),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
+                                    color: Colors.grey.shade500,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      _isPasswordVisible = !_isPasswordVisible;
+                                    });
+                                  },
+                                ),
+                                filled: true,
+                                fillColor: Colors.grey.shade50,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide.none,
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide(color: Colors.grey.shade200),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide(color: Colors.blue.shade300, width: 2),
+                                ),
                               ),
                             ),
-                            const SizedBox(height: 25.0),
+                            const SizedBox(height: 35.0),
                             
                             // BLoC Consumer for Button & SnackBar
                             BlocConsumer<AuthBloc, AuthState>(
                               listener: (context, state) {
                                 if (state is AuthError) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text(state.message), backgroundColor: Colors.red),
-                                  );
+                                  SnackbarUtil.showError(context, state.message);
                                 } else if (state is AuthSuccess && state.message.contains("Login")) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text(state.message), backgroundColor: Colors.green),
-                                  );
+                                  SnackbarUtil.showSuccess(context, "Login Berhasil!");
                                   Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(builder: (context) => HomeScreen(cameras: widget.cameras)),
@@ -112,24 +162,49 @@ class _SignInPageState extends State<SignInPage> {
                               },
                               builder: (context, state) {
                                 bool isLoading = state is AuthLoading;
-                                return SizedBox(
+                                return Container(
                                   width: double.infinity,
-                                  height: 50,
+                                  height: 55,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(16),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.blue.shade200.withOpacity(0.5),
+                                        blurRadius: 15,
+                                        offset: const Offset(0, 8),
+                                      )
+                                    ],
+                                  ),
                                   child: ElevatedButton(
                                     onPressed: isLoading ? null : _onLoginPressed,
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.blue.shade300,
+                                      backgroundColor: Colors.blue.shade600,
                                       foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      elevation: 0,
                                     ),
                                     child: isLoading
-                                      ? const CircularProgressIndicator(color: Colors.white)
-                                      : const Text('Sign In', style: TextStyle(fontSize: 16)),
+                                      ? const SizedBox(
+                                          width: 24,
+                                          height: 24,
+                                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
+                                        )
+                                      : const Text(
+                                          'Masuk', 
+                                          style: TextStyle(
+                                            fontSize: 18, 
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
                                   ),
                                 );
                               },
                             ),
                             
-                            const SizedBox(height: 20.0),
+                            const SizedBox(height: 25.0),
                             TextButton(
                               onPressed: () {
                                 Navigator.push(
@@ -137,15 +212,18 @@ class _SignInPageState extends State<SignInPage> {
                                   MaterialPageRoute(builder: (context) => SignUpPage(cameras: widget.cameras)),
                                 );
                               },
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.blue.shade700,
+                              ),
                               child: RichText(
                                 text: TextSpan(
                                   text: 'Belum punya akun? ',
-                                  style: const TextStyle(color: Colors.black),
+                                  style: TextStyle(color: Colors.grey.shade700, fontSize: 15),
                                   children: [
                                     TextSpan(
                                       text: 'Daftar disini',
                                       style: TextStyle(
-                                        color: Colors.blue.shade300,
+                                        color: Colors.blue.shade600,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),

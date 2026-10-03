@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/features/community/presentation/bloc/community_bloc.dart';
 import 'package:frontend/features/community/presentation/bloc/community_event.dart';
 import 'package:frontend/features/community/presentation/bloc/community_state.dart';
+import 'package:frontend/core/utils/snackbar_util.dart';
 
 class TanyaKomunitasPage extends StatefulWidget {
   const TanyaKomunitasPage({super.key});
@@ -43,29 +44,17 @@ class _TanyaKomunitasPageState extends State<TanyaKomunitasPage> {
 
   void _submitQuestion() {
     if (_questionController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Silakan masukkan pertanyaan Anda'),
-            backgroundColor: Colors.red),
-      );
+      SnackbarUtil.showError(context, 'Silakan masukkan pertanyaan Anda');
       return;
     }
 
     if (_descriptionController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Silakan masukkan deskripsi masalah'),
-            backgroundColor: Colors.red),
-      );
+      SnackbarUtil.showError(context, 'Silakan masukkan deskripsi masalah');
       return;
     }
 
     if (_pickedFile == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Silakan pilih gambar terlebih dahulu'),
-            backgroundColor: Colors.red),
-      );
+      SnackbarUtil.showError(context, 'Silakan pilih gambar terlebih dahulu');
       return;
     }
 
@@ -81,22 +70,22 @@ class _TanyaKomunitasPageState extends State<TanyaKomunitasPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Tanya Komunitas'),
+        title: const Text('Tanya Komunitas', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.black87)),
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black87),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: BlocConsumer<CommunityBloc, CommunityState>(
         listener: (context, state) {
           if (state is CommunityActionSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.green,
-              ),
-            );
+            SnackbarUtil.showSuccess(context, state.message);
 
             _questionController.clear();
             _descriptionController.clear();
@@ -106,144 +95,144 @@ class _TanyaKomunitasPageState extends State<TanyaKomunitasPage> {
 
             Navigator.pop(context);
           } else if (state is CommunityError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Gagal: ${state.message}'),
-                backgroundColor: Colors.red,
-              ),
-            );
+            SnackbarUtil.showError(context, 'Gagal: ${state.message}');
           }
         },
         builder: (context, state) {
           final isLoading = state is CommunityLoading;
 
           return isLoading
-              ? const Center(child: CircularProgressIndicator())
+              ? const Center(child: CircularProgressIndicator(color: Colors.blue))
               : SingleChildScrollView(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Column(
-                        children: [
-                          ElevatedButton(
-                            onPressed: _pickImage,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: Colors.blue[800],
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 16, horizontal: 24),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                side: BorderSide(
-                                    color: Colors.blue[800]!, width: 1.5),
-                              ),
-                              elevation: 3,
-                              shadowColor: Colors.blue.withOpacity(0.3),
-                            ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.camera_alt, size: 24),
-                                SizedBox(width: 12),
-                                Text(
-                                  'Upload Foto Tanaman',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          if (_pickedFile != null)
-                            Column(
-                              children: [
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Gambar terpilih',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                                const SizedBox(height: 8),
-                                Container(
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.grey.shade100, width: 2),
+                        ),
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          children: [
+                            if (_pickedFile == null)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 24),
+                                child: Icon(Icons.add_photo_alternate_rounded, size: 64, color: Colors.grey.shade300),
+                              )
+                            else
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: Image.file(
+                                  File(_pickedFile!.path),
                                   height: 200,
                                   width: double.infinity,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: Image.file(
-                                      File(_pickedFile!.path),
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
+                                  fit: BoxFit.cover,
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete, color: Colors.red),
-                                  onPressed: () =>
-                                      setState(() => _pickedFile = null),
+                              ),
+                            const SizedBox(height: 20),
+                            ElevatedButton.icon(
+                              onPressed: _pickImage,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: _pickedFile == null ? Colors.blue.shade600 : Colors.white,
+                                foregroundColor: _pickedFile == null ? Colors.white : Colors.blue.shade700,
+                                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  side: _pickedFile == null ? BorderSide.none : BorderSide(color: Colors.blue.shade100, width: 2),
                                 ),
-                              ],
+                                elevation: _pickedFile == null ? 4 : 0,
+                                shadowColor: Colors.blue.withOpacity(0.3),
+                              ),
+                              icon: Icon(_pickedFile == null ? Icons.camera_alt_rounded : Icons.cameraswitch_rounded),
+                              label: Text(
+                                _pickedFile == null ? 'Upload Foto Tanaman' : 'Ganti Foto',
+                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
                             ),
-                        ],
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      const Text(
+                        'Pertanyaan Anda',
+                        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: Colors.black87),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: _questionController,
+                        style: const TextStyle(fontSize: 15),
+                        decoration: InputDecoration(
+                          hintText: 'Misal: Kenapa daun monstera saya menguning?',
+                          hintStyle: TextStyle(color: Colors.grey.shade400, fontWeight: FontWeight.w500),
+                          filled: true,
+                          fillColor: Colors.grey.shade50,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.all(20),
+                        ),
+                        maxLines: 2,
                       ),
                       const SizedBox(height: 24),
                       const Text(
-                        'Pertanyaan Anda',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 8),
-                      TextField(
-                        controller: _questionController,
-                        decoration: const InputDecoration(
-                          hintText:
-                              'Masukkan pertanyaan yang menunjukkan apa yang salah dengan tanaman anda',
-                          border: OutlineInputBorder(),
-                        ),
-                        maxLines: 3,
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
                         'Deskripsi Masalah',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: Colors.black87),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
                       TextField(
                         controller: _descriptionController,
-                        decoration: const InputDecoration(
-                          hintText:
-                              'Jelaskan ciri-ciri khususnya seperti perubahan daun, warna, serangga, kerusakan, dll.',
-                          border: OutlineInputBorder(),
+                        style: const TextStyle(fontSize: 15),
+                        decoration: InputDecoration(
+                          hintText: 'Jelaskan ciri-ciri khususnya seperti perubahan daun, warna, serangga, dll.',
+                          hintStyle: TextStyle(color: Colors.grey.shade400, fontWeight: FontWeight.w500),
+                          filled: true,
+                          fillColor: Colors.grey.shade50,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.all(20),
                         ),
                         maxLines: 5,
                       ),
-                      const SizedBox(height: 24),
-                      ElevatedButton(
-                        onPressed: isLoading ? null : _submitQuestion,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(50),
-                          ),
+                      const SizedBox(height: 40),
+                      Container(
+                        decoration: BoxDecoration(
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.blue.withOpacity(0.3),
+                              blurRadius: 15,
+                              offset: const Offset(0, 8),
+                            )
+                          ]
                         ),
-                        child: isLoading
-                            ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 3,
+                        child: ElevatedButton(
+                          onPressed: isLoading ? null : _submitQuestion,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue.shade600,
+                            padding: const EdgeInsets.symmetric(vertical: 18),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: isLoading
+                              ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
+                                )
+                              : const Text(
+                                  'Kirim Pertanyaan',
+                                  style: TextStyle(fontSize: 17, color: Colors.white, fontWeight: FontWeight.bold),
                                 ),
-                              )
-                            : const Text(
-                                'Kirim',
-                                style: TextStyle(
-                                    fontSize: 16, color: Colors.white),
-                              ),
+                        ),
                       ),
+                      const SizedBox(height: 20),
                     ],
                   ),
                 );

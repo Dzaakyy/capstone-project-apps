@@ -6,8 +6,10 @@ import 'package:frontend/features/diagnosis/presentation/bloc/diagnosis_event.da
 import 'package:frontend/features/diagnosis/presentation/bloc/diagnosis_state.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'dart:ui';
 import 'package:frontend/features/diagnosis/presentation/pages/diagnosis_screen.dart';
 import 'package:logger/logger.dart';
+import 'package:frontend/core/utils/snackbar_util.dart';
 
 class CameraPage extends StatefulWidget {
   final List<CameraDescription> cameras;
@@ -27,7 +29,7 @@ class _CameraPageState extends State<CameraPage> {
   @override
   void initState() {
     super.initState();
-    _controller = CameraController(widget.cameras[0], ResolutionPreset.medium);
+    _controller = CameraController(widget.cameras[0], ResolutionPreset.max, enableAudio: false);
     _controller.initialize().then((_) {
       if (!mounted) return;
       setState(() {
@@ -79,7 +81,7 @@ class _CameraPageState extends State<CameraPage> {
 
   void _confirmPicture() {
     if (_capturedImage == null) {
-      _showErrorSnackBar('No image selected');
+      SnackbarUtil.showError(context, 'No image selected');
       return;
     }
 
@@ -99,12 +101,12 @@ class _CameraPageState extends State<CameraPage> {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 20,
-                    spreadRadius: 5,
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 30,
+                    spreadRadius: 10,
                   ),
                 ],
               ),
@@ -112,36 +114,37 @@ class _CameraPageState extends State<CameraPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: Colors.red.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.warning_rounded,
-                      size: 40,
+                      size: 48,
                       color: Colors.red[600],
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                   const Text(
                     'Not a Mango Leaf',
                     style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
                       color: Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 12),
                   const Text(
-                    'The image you provided doesn\'t appear to be a mango leaf. Please try again with a clear image of a mango leaf.',
+                    'The image you provided doesn\'t appear to be a mango leaf. Please try again with a clear image.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.black54,
+                      height: 1.5,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 32),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -149,8 +152,9 @@ class _CameraPageState extends State<CameraPage> {
                         backgroundColor: Colors.red[600],
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(16),
                         ),
+                        elevation: 0,
                       ),
                       onPressed: () {
                         Navigator.of(context).pop();
@@ -175,73 +179,6 @@ class _CameraPageState extends State<CameraPage> {
     }
   }
 
-void _showErrorSnackBar(String message) {
-  if (mounted) {
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          elevation: 5,
-          backgroundColor: Colors.white,
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.error_outline, color: Colors.red[600], size: 30),
-                    const SizedBox(width: 10),
-                    Text(
-                      'Error',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red[600],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 15),
-                Text(
-                  message.contains('Penyakit tidak ditemukan')
-                      ? 'Maaf, penyakit pada daun ini tidak ditemukan. Silakan coba dengan gambar lain atau tanyakan ke komunitas.'
-                      : message,
-                  style: const TextStyle(fontSize: 16, color: Colors.black87),
-                ),
-                const SizedBox(height: 20),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red[600],
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text(
-                      'Tutup',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
   void _handleBackPress() {
     if (_capturedImage != null) {
       _retakePicture();
@@ -256,7 +193,7 @@ void _showErrorSnackBar(String message) {
       return const Scaffold(
         backgroundColor: Colors.black,
         body: Center(
-          child: CircularProgressIndicator(color: Colors.white),
+          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
         ),
       );
     }
@@ -281,7 +218,10 @@ void _showErrorSnackBar(String message) {
           if (state.message.contains('Bukan daun mangga')) {
             _showNotMangoAlert();
           } else {
-            _showErrorSnackBar('Diagnosis failed: ${state.message}');
+            final msg = state.message.contains('Penyakit tidak ditemukan')
+                      ? 'Maaf, penyakit pada daun ini tidak ditemukan. Silakan coba dengan gambar lain.'
+                      : state.message;
+            SnackbarUtil.showError(context, msg);
           }
         }
       },
@@ -289,113 +229,187 @@ void _showErrorSnackBar(String message) {
         final _isProcessingDiagnosis = state is DiagnosisLoading;
 
         return Scaffold(
+          backgroundColor: Colors.black,
           body: Stack(
             children: [
-              Column(
-                children: [
-                  Container(
-                    color: Colors.black,
-                    height: 80,
-                    padding: const EdgeInsets.only(left: 10, top: 5),
-                    alignment: Alignment.centerLeft,
-                    child: IconButton(
-                      icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 25),
-                      onPressed: _isProcessingDiagnosis ? null : _handleBackPress,
-                    ),
-                  ),
-                  Expanded(
-                    flex: 9,
+              Positioned.fill(
+                child: _capturedImage == null
+                    ? CameraPreview(_controller)
+                    : Image.file(
+                        File(_capturedImage!.path),
+                        fit: BoxFit.cover,
+                      ),
+              ),
+              
+              // Top Overlay for Back Button
+              Positioned(
+                top: 50,
+                left: 20,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(30),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                     child: Container(
-                      color: Colors.black,
-                      width: double.infinity,
-                      child: _capturedImage == null
-                          ? CameraPreview(_controller)
-                          : Image.file(
-                              File(_capturedImage!.path),
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              height: double.infinity,
-                            ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.3),
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 22),
+                        onPressed: _isProcessingDiagnosis ? null : _handleBackPress,
+                      ),
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    color: Colors.black,
-                    child: _capturedImage == null
-                        ? Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.photo_library, color: Colors.white),
-                                onPressed: _isProcessingDiagnosis ? null : _pickFromGallery,
-                                iconSize: 32,
-                              ),
-                              GestureDetector(
-                                onTap: _isProcessingDiagnosis ? null : _takePicture,
+                ),
+              ),
+
+              // Bottom Overlay for Controls
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.only(bottom: 50, top: 20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.8),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                  child: _capturedImage == null
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(30),
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                                 child: Container(
-                                  padding: const EdgeInsets.all(2),
+                                  padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.2),
                                     shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: _isProcessingDiagnosis ? Colors.grey : Colors.white,
-                                      width: 2,
+                                  ),
+                                  child: IconButton(
+                                    icon: const Icon(Icons.photo_library_rounded, color: Colors.white),
+                                    onPressed: _isProcessingDiagnosis ? null : _pickFromGallery,
+                                    iconSize: 28,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: _isProcessingDiagnosis ? null : _takePicture,
+                              child: Container(
+                                height: 80,
+                                width: 80,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 4,
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Container(
+                                    height: 65,
+                                    width: 65,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
                                     ),
                                   ),
-                                  child: Icon(
-                                    Icons.circle,
-                                    color: _isProcessingDiagnosis ? Colors.grey : Colors.white,
-                                    size: 50,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 60), // Balance the layout
+                          ],
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(30),
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                                child: InkWell(
+                                  onTap: _isProcessingDiagnosis ? null : _confirmPicture,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.25),
+                                      borderRadius: BorderRadius.circular(30),
+                                      border: Border.all(color: Colors.white.withOpacity(0.5)),
+                                    ),
+                                    child: Row(
+                                      children: const [
+                                        Icon(Icons.check_circle_outline_rounded, color: Colors.white, size: 28),
+                                        SizedBox(width: 12),
+                                        Text(
+                                          'Confirm Image',
+                                          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+                                        )
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 40),
-                            ],
-                          )
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              IconButton(
-                                icon: Icon(
-                                  Icons.check_circle_rounded,
-                                  color: _isProcessingDiagnosis ? Colors.grey : Colors.white,
-                                ),
-                                onPressed: _isProcessingDiagnosis ? null : _confirmPicture,
-                                iconSize: 50,
-                              ),
-                            ],
-                          ),
-                  ),
-                ],
+                            ),
+                          ],
+                        ),
+                ),
               ),
+
               if (_isProcessingDiagnosis)
-                Container(
-                  color: Colors.black.withOpacity(0.7),
-                  child: const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 3,
-                        ),
-                        SizedBox(height: 16),
-                        Text(
-                          'Analyzing image...',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
+                Positioned.fill(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      color: Colors.black.withOpacity(0.5),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(color: Colors.white.withOpacity(0.2)),
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 3,
+                                ),
+                                SizedBox(height: 24),
+                                Text(
+                                  'Analyzing Plant',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 1,
+                                  ),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  'Please wait a moment...',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Please wait while we diagnose the leaf',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),

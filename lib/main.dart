@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/features/splash/presentation/pages/splash_screen.dart';
 import 'package:camera/camera.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -93,10 +94,22 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Flutter Demo',
+        title: 'MangoCare',
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xFF2563EB), // Tailwind blue-600
+            primary: const Color(0xFF2563EB),
+            secondary: const Color(0xFF10B981), // Tailwind emerald-500
+            background: const Color(0xFFF8FAFC), // Tailwind slate-50
+          ),
           useMaterial3: true,
+          textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme),
+          appBarTheme: const AppBarTheme(
+            elevation: 0,
+            centerTitle: true,
+            backgroundColor: Colors.transparent,
+            foregroundColor: Color(0xFF1E293B), // Tailwind slate-800
+          ),
         ),
         home: SplashScreen(cameras: cameras),
       ),

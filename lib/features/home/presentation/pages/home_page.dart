@@ -273,120 +273,120 @@ class _HomePageState extends State<HomePage> {
                             );
                           }
 
-                          return RefreshIndicator(
-                            onRefresh: () async {
-                              _refreshHistory();
-                            },
-                            child: ListView.separated(
-                              padding: const EdgeInsets.all(16),
+                          return ListView.builder(
+                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
                               itemCount: histories.length > 5 ? 5 : histories.length,
-                              separatorBuilder: (context, index) =>
-                                  const Divider(height: 16),
                               itemBuilder: (context, index) {
                                 final history = histories[index];
-                                return InkWell(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => DiagnosisPage(
-                                          diagnosisResult: history,
-                                          cameras: widget.cameras,
-                                          showBackButton: true,
-                                          fromHistory: true,
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(16),
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => DiagnosisPage(
+                                            diagnosisResult: history,
+                                            cameras: widget.cameras,
+                                            showBackButton: true,
+                                            fromHistory: true,
+                                          ),
                                         ),
+                                      ).then((_) => _refreshHistory());
+                                    },
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(color: Colors.grey.shade100),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.04),
+                                            blurRadius: 10,
+                                            offset: const Offset(0, 4),
+                                          ),
+                                        ],
                                       ),
-                                    ).then((_) {
-                                      _refreshHistory();
-                                    });
-                                  },
-                                  child: Padding(
-                                    padding:
-                                        const EdgeInsets.symmetric(vertical: 12),
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          width: 80,
-                                          height: 80,
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                            color: Colors.grey.shade200,
+                                      child: Row(
+                                        children: [
+                                          // Thumbnail gambar
+                                          ClipRRect(
+                                            borderRadius: const BorderRadius.horizontal(left: Radius.circular(16)),
+                                            child: SizedBox(
+                                              width: 90,
+                                              height: 90,
+                                              child: history.imagePath.isNotEmpty
+                                                  ? Image.network(
+                                                      history.imagePath,
+                                                      fit: BoxFit.cover,
+                                                      errorBuilder: (_, __, ___) => Container(
+                                                        color: Colors.grey.shade100,
+                                                        child: Icon(Icons.broken_image_rounded, color: Colors.grey.shade400),
+                                                      ),
+                                                    )
+                                                  : Container(
+                                                      color: Colors.blue.shade50,
+                                                      child: Icon(Icons.eco_rounded, color: Colors.blue.shade300, size: 36),
+                                                    ),
+                                            ),
                                           ),
-                                          child: ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                            child: history.imagePath.isNotEmpty
-                                                ? Image.network(
-                                                    history.imagePath,
-                                                    fit: BoxFit.cover,
-                                                    loadingBuilder: (context,
-                                                        child, progress) {
-                                                      if (progress == null) {
-                                                        return child;
-                                                      }
-                                                      return Center(
-                                                        child:
-                                                            CircularProgressIndicator(
-                                                          value: progress
-                                                                      .expectedTotalBytes !=
-                                                                  null
-                                                              ? progress
-                                                                      .cumulativeBytesLoaded /
-                                                                  progress
-                                                                      .expectedTotalBytes!
-                                                              : null,
-                                                        ),
-                                                      );
-                                                    },
-                                                    errorBuilder: (context, error,
-                                                        stackTrace) {
-                                                      return const Icon(
-                                                        Icons.broken_image,
-                                                        color: Colors.grey,
-                                                      );
-                                                    },
-                                                  )
-                                                : const Icon(
-                                                    Icons.image,
-                                                    size: 40,
-                                                    color: Colors.grey,
+                                          // Info
+                                          Expanded(
+                                            child: Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.blue.shade50,
+                                                      borderRadius: BorderRadius.circular(20),
+                                                    ),
+                                                    child: Text(
+                                                      history.golongan.isNotEmpty ? history.golongan : 'Diagnosis',
+                                                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.blue.shade700),
+                                                    ),
                                                   ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 16),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                _formatDate(
-                                                    history.tanggalDiagnosis),
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.grey.shade600,
-                                                ),
+                                                  const SizedBox(height: 6),
+                                                  Text(
+                                                    history.namaPenyakit,
+                                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Colors.black87),
+                                                    maxLines: 2,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Row(
+                                                    children: [
+                                                      Icon(Icons.calendar_today_rounded, size: 11, color: Colors.grey.shade400),
+                                                      const SizedBox(width: 4),
+                                                      Expanded(
+                                                        child: Text(
+                                                          _formatDate(history.tanggalDiagnosis),
+                                                          style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
                                               ),
-                                              const SizedBox(height: 2),
-                                              Text(
-                                                history.namaPenyakit,
-                                                style: const TextStyle(
-                                                  fontSize: 19,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ],
+                                            ),
                                           ),
-                                        ),
-                                        const Icon(Icons.chevron_right),
-                                      ],
+                                          // Arrow
+                                          Padding(
+                                            padding: const EdgeInsets.only(right: 12),
+                                            child: Icon(Icons.chevron_right_rounded, color: Colors.blue.shade400, size: 22),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 );
                               },
-                            ),
-                          );
+                            );
+
                         }
                         
                         // Default fallback

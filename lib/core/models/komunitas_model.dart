@@ -8,6 +8,7 @@ class Komunitas {
   final DateTime? tanggalPost;
   final int? likeCount;
   final int? dislikeCount;
+  final int commentCount;
 
   Komunitas({
     this.idKomunitas,
@@ -19,6 +20,7 @@ class Komunitas {
     this.tanggalPost,
     this.likeCount = 0,
     this.dislikeCount = 0,
+    this.commentCount = 0,
   });
 
   factory Komunitas.fromJson(Map<String, dynamic> json) {
@@ -34,6 +36,8 @@ class Komunitas {
           : null,
       likeCount: json['like_count'] ?? 0,
       dislikeCount: json['dislike_count'] ?? 0,
+      commentCount: json['comment_count'] ?? 0,
     );
   }
 }
+

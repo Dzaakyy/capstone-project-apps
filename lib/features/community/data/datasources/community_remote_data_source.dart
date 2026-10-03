@@ -93,8 +93,9 @@ class CommunityRemoteDataSourceImpl implements CommunityRemoteDataSource {
       headers: {'Authorization': 'Bearer $token'},
     );
     if (response.statusCode == 200) {
-      final List<dynamic> json = jsonDecode(response.body);
-      return json.map((e) => Komentar.fromJson(e)).toList();
+      final Map<String, dynamic> json = jsonDecode(response.body);
+      final List<dynamic> komentarData = json['komentar'] ?? [];
+      return komentarData.map((e) => Komentar.fromJson(e)).toList();
     }
     return [];
   }
