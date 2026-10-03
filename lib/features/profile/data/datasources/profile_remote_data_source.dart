@@ -23,7 +23,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   Future<Map<String, dynamic>> fetchProfile() async {
     final token = await _getToken();
     final response = await http.get(
-      Uri.parse('${ApiConstants.baseUrl}/auth/me'),
+      Uri.parse('${ApiConstants.baseUrl}/api/profile'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -44,7 +44,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       if (password != null && password.isNotEmpty) 'password': password,
     };
     final response = await http.put(
-      Uri.parse('${ApiConstants.baseUrl}/auth/user'),
+      Uri.parse('${ApiConstants.baseUrl}/api/profile'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
